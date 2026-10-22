@@ -1,0 +1,3 @@
+import { View } from 'react-native';import StatusPill from '@/components/ui/StatusPill';
+import { TranslatedText as Text } from '@/components/common/TranslatedText';
+export default function NotificationCard({title,message,date,read=false}:{title:string;message:string;date:string;read?:boolean}){return <View className="mb-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"><View className="flex-row items-center justify-between gap-2"><Text className="flex-1 font-bold text-slate-900 dark:text-white">{title}</Text><StatusPill status={read?'READ':'UNREAD'}/></View><Text className="mt-2 text-sm leading-5 text-slate-600 dark:text-slate-300">{message}</Text><Text className="mt-3 text-xs text-slate-400">{date}</Text></View>}

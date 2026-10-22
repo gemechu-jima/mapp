@@ -1,0 +1,3 @@
+import { View } from 'react-native';
+import { TranslatedText as Text } from '@/components/common/TranslatedText';
+export default function FeatureNotice({title,body}:{title:string;body:string}){return <View className="mb-4 rounded-2xl border border-blue-100 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950"><Text className="font-bold text-blue-900 dark:text-blue-200">{title}</Text><Text className="mt-1 text-sm leading-5 text-blue-800 dark:text-blue-300">{body}</Text></View>}

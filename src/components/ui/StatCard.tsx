@@ -1,0 +1,3 @@
+import { View } from 'react-native';
+import { TranslatedText as Text } from '@/components/common/TranslatedText';
+export default function StatCard({label,value,icon,detail}:{label:string;value:string|number;icon:string;detail?:string}) { return <View className="min-w-[44%] flex-1 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"><Text className="text-2xl">{icon}</Text><Text className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">{value}</Text><Text className="mt-1 text-sm text-slate-500 dark:text-slate-400">{label}</Text>{detail?<Text className="mt-1 text-xs text-slate-400">{detail}</Text>:null}</View>; }

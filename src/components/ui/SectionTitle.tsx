@@ -1,0 +1,3 @@
+import { View } from 'react-native';
+import { TranslatedText as Text } from '@/components/common/TranslatedText';
+export default function SectionTitle({title,caption}:{title:string;caption?:string}) { return <View className="mb-3 mt-2"><Text className="text-lg font-bold text-slate-900 dark:text-white">{title}</Text>{caption?<Text className="mt-1 text-sm text-slate-500 dark:text-slate-400">{caption}</Text>:null}</View>; }

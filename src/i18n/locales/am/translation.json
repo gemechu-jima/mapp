@@ -1,0 +1,84 @@
+{
+  "common": {
+    "dashboard": "ዳሽቦርድ",
+    "users": "ተጠቃሚዎች",
+    "games": "ጨዋታዎች",
+    "reservations": "ምዝገባዎች",
+    "draws": "ዕጣዎች",
+    "winners": "አሸናፊዎች",
+    "login": "ግባ",
+    "register": "ይመዝገቡ",
+    "logout": "ውጣ",
+    "language": "ቋንቋ"
+  },
+
+  "auth": {
+    "welcomeBack": "እንኳን ደህና መጡ",
+    "loginDescription": "ወደ Bingo መለያዎ ይግቡ",
+    "createAccount": "መለያ ይፍጠሩ",
+    "registerDescription": "እንደ Bingo ተጫዋች ይመዝገቡ",
+    "firstName": "የመጀመሪያ ስም",
+    "lastName": "የአያት ስም",
+    "username": "የተጠቃሚ ስም",
+    "phoneNumber": "ስልክ ቁጥር",
+    "password": "የይለፍ ቃል",
+    "confirmPassword": "የይለፍ ቃል ያረጋግጡ",
+    "loginButton": "ግባ",
+    "registerButton": "መለያ ይፍጠሩ",
+    "noAccount": "መለያ የለዎትም?",
+    "haveAccount": "ቀድሞ መለያ አለዎት?",
+    "registerHere": "ይመዝገቡ",
+    "loginHere": "ግባ"
+  },
+
+  "game": {
+    "game": "ጨዋታ",
+    "newGame": "አዲስ ጨዋታ",
+    "startGame": "ጨዋታ ጀምር",
+    "gameTitle": "የጨዋታው ርዕስ",
+    "totalNumbers": "ጠቅላላ ቁጥሮች",
+    "reservationMinutes": "የቦታ መያዣ ደቂቃዎች",
+    "status": "ሁኔታ",
+    "open": "ክፍት",
+    "closed": "ዝግ",
+    "available": "ይገኛል",
+    "reserved": "ተይዟል",
+    "confirmed": "ተረጋገጠ",
+    "cancelled": "ተሰርዟል",
+    "expired": "ጊዜው አልፏል"
+  },
+
+  "reservation": {
+    "reservation": "ቦታ መያዝ",
+    "reservations": "የተያዙ ቦታዎች",
+    "reserve": "ቦታ ያዝ",
+    "confirm": "አረጋግጥ",
+    "cancel": "ሰርዝ",
+    "pending": "በመጠባበቅ ላይ",
+    "confirmed": "ተረጋገጠ",
+    "cancelled": "ተሰርዟል",
+    "expired": "ጊዜው አልፏል",
+    "expiresAt": "ጊዜው የሚያበቃበት",
+    "reservedBy": "የያዘው ሰው"
+  },
+
+  "draw": {
+    "draw": "ዕጣ ማውጣት",
+    "draws": "ዕጣዎች",
+    "startDraw": "ዕጣ ማውጣት ጀምር",
+    "drawNumber": "የዕጣ ቁጥር",
+    "drawnNumber": "ወጣቱ የዕጣ ቁጥር",
+    "drawHistory": "የዕጣ ታሪክ",
+    "winner": "አሸናፊ",
+    "winners": "አሸናፊዎች",
+    "noDraws": "ምንም ዓይነት ዕጣዎች የሉም።",
+    "noConfirmedReservations": "ምንም የተረጋገጡ የተያዙ ቦታዎች የሉም።"
+  },
+
+  "validation": {
+    "required": "ይህ መስክ አስፈላጊ ነው።",
+    "invalidPhone": "ትክክለኛ ያልሆነ የስልክ ቁጥር።",
+    "invalidPassword": "ትክክለኛ ያልሆነ የይለፍ ቃል፤"
+  }
+
+}

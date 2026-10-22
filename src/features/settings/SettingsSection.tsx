@@ -1,0 +1,3 @@
+import type { ReactNode } from 'react';import { View } from 'react-native';
+import { TranslatedText as Text } from '@/components/common/TranslatedText';
+export default function SettingsSection({title,description,children}:{title:string;description?:string;children:ReactNode}){return <View className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"><Text className="text-base font-bold text-slate-900 dark:text-white">{title}</Text>{description?<Text className="mb-3 mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</Text>:null}<View className="mt-3 gap-3">{children}</View></View>}

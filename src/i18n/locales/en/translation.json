@@ -1,0 +1,84 @@
+
+{
+  "common": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "games": "Games",
+    "reservations": "Reservations",
+    "draws": "Draws",
+    "winners": "Winners",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "language": "Language"
+  },
+
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "loginDescription": "Login to your Bingo account",
+    "createAccount": "Create Account",
+    "registerDescription": "Register as a Bingo player",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "username": "Username",
+    "phoneNumber": "Phone Number",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "loginButton": "Login",
+    "registerButton": "Create Account",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "registerHere": "Register",
+    "loginHere": "Login"
+  },
+  "game": {
+    "game": "Game",
+    "newGame": "New Game",
+    "startGame": "Start Game",
+    "gameTitle": "Game Title",
+    "totalNumbers": "Total Numbers",
+    "reservationMinutes": "Reservation Minutes",
+    "status": "Status",
+    "open": "Open",
+    "closed": "Closed",
+    "available": "Available",
+    "reserved": "Reserved",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "expired": "Expired"
+  },
+
+  "reservation": {
+    "reservation": "Reservation",
+    "reservations": "Reservations",
+    "reserve": "Reserve",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "expired": "Expired",
+    "expiresAt": "Expires At",
+    "reservedBy": "Reserved By"
+  },
+
+  "draw": {
+    "draw": "Draw",
+    "draws": "Draws",
+    "startDraw": "Start Draw",
+    "drawNumber": "Draw Number",
+    "drawnNumber": "Drawn Number",
+    "drawHistory": "Draw History",
+    "winner": "Winner",
+    "winners": "Winners",
+    "noDraws": "No draws available.",
+    "noConfirmedReservations": "No confirmed reservations."
+  },
+
+  "validation": {
+    "required": "This field is required.",
+    "invalidPhone": "Invalid phone number.",
+    "invalidPassword": "Invalid password."
+  }
+
+}

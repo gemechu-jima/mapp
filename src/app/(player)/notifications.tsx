@@ -1,0 +1,2 @@
+import ManagementList from '@/features/shared/ManagementList';
+export default function NotificationsScreen(){return <ManagementList title="Notifications" subtitle="Reservation updates, payment status and draw announcements." stats={[{label:'Unread',value:2,icon:'🔔'}]} records={[{id:1,title:'Payment awaiting review',subtitle:'Weekend Bingo · Number #08',status:'PENDING',detail:'Your proof has been submitted. The admin will review it.'},{id:2,title:'Game starts soon',subtitle:'Friday Bingo',status:'ACTIVE',detail:'Check your confirmed numbers before the draw.'}]}/>;}

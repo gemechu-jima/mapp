@@ -1,0 +1,95 @@
+{
+  "common": {
+    "dashboard": "Daashboordii",
+    "users": "Fayyadamtoota",
+    "games": "Taphoota",
+    "reservations": "Qabsiisawwan",
+    "draws": "Qoodawwan",
+    "winners": "Mo'attoota",
+    "login": "Seeni",
+    "register": "Galmaa'i",
+    "logout": "Ba'i",
+    "language": "Afaan"
+  },
+
+  "auth": {
+    "welcomeBack": "Baga nagaan deebite",
+    "loginToAccount": "Herrega kee seeni",
+    "phoneNumber": "Lakkoofsa bilbilaa",
+    "password": "Jecha icciitii",
+    "confirmPassword": "Jecha icciitii mirkaneessi",
+    "firstName": "Maqaa jalqabaa",
+    "lastName": "Maqaa akaakayyuu",
+    "username": "Maqaa fayyadamaa",
+    "createAccount": "Herrega uumi",
+    "registerAsPlayer": "Taphataa Bingo ta'uun galmaa'i",
+    "dontHaveAccount": "Herrega hin qabduu?",
+    "alreadyHaveAccount": "Duraan herrega qabdaa?",
+    "loggingIn": "Seenaa jira...",
+    "registering": "Galmaa'aa jira...",
+    "loginSuccess": "Milkiin seenteetta.",
+    "registrationSuccess": "Galmeen milkaa'eera. Maaloo seeni.",
+    "requiredFields": "Maaloo dirreewwan barbaachisoo guuti.",
+    "passwordsDoNotMatch": "Jechi icciitii wal hin simu.",
+    "passwordTooShort": "Jechi icciitii yoo xiqqaate arfii 6 qabaachuu qaba."
+  },
+
+  "game": {
+    "game": "Tapha",
+    "newGame": "Tapha haaraa",
+    "startGame": "Tapha jalqabi",
+    "gameTitle": "Mata-duree taphaa",
+    "totalNumbers": "Baay'ina lakkoofsotaa",
+    "reservationMinutes": "Daqiiqaa qabsiisaa",
+    "status": "Haala",
+    "open": "Banaa",
+    "closed": "Cufaa",
+    "available": "Argama",
+    "reserved": "Qabameera",
+    "confirmed": "Mirkanaa'eera",
+    "cancelled": "Haqameera",
+    "expired": "Yeroon darbeera"
+  },
+
+  "reservation": {
+    "reservation": "Qabsiisaa",
+    "reservations": "Qabsiisawwan",
+    "reserve": "Qabsiisi",
+    "confirm": "Mirkaneessi",
+    "cancel": "Haqi",
+    "pending": "Eeggachaa jira",
+    "confirmed": "Mirkanaa'eera",
+    "cancelled": "Haqameera",
+    "expired": "Yeroon darbeera",
+    "expiresAt": "Yeroon itti dhumu",
+    "reservedBy": "Kan qabsiise"
+  },
+
+  "draw": {
+    "draw": "Qooduu",
+    "draws": "Qoodawwan",
+    "startDraw": "Qooduu jalqabi",
+    "drawNumber": "Lakkoofsa qoodi",
+    "drawnNumber": "Lakkoofsa qoodame",
+    "drawHistory": "Seenaa qoodawwan",
+    "winner": "Mo'ataa",
+    "winners": "Mo'attoota",
+    "noDraws": "Qoodawwan hin jiran.",
+    "noConfirmedReservations": "Qabsiisawwan mirkanaa'an hin jiran."
+  },
+
+  "validation": {
+    "required": "Dirreen kun barbaachisaadha.",
+    "invalidPhone": "Lakkoofsi bilbilaa sirrii miti.",
+    "invalidPassword": "Jechi icciitii sirrii miti."
+  },
+
+  "messages": {
+    "loading": "Fe'aa jira...",
+    "saving": "Olkaa'aa jira...",
+    "success": "Milkaa'eera.",
+    "error": "Dogoggorri uumameera.",
+    "noData": "Daataan hin jiru.",
+    "somethingWentWrong": "Wanti tokko dogoggoreera."
+  }
+}

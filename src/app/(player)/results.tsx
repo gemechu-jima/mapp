@@ -1,0 +1,3 @@
+import ManagementList from '@/features/shared/ManagementList';
+const records=[{id:1,title:'Friday Bingo · Game #104',subtitle:'Draw completed · 18 Oct 2026',status:'COMPLETED',detail:'1st: #07 · 2nd: #21 · 3rd: #38'},{id:2,title:'Evening Bingo · Game #103',subtitle:'Draw completed · 16 Oct 2026',status:'COMPLETED',detail:'1st: #12 · 2nd: #03 · 3rd: #29'}];
+export default function ResultsScreen(){return <ManagementList title="Draw results" subtitle="Browse published Bingo results and past winners." records={records} stats={[{label:'Published draws',value:2,icon:'🏆'},{label:'My wins',value:0,icon:'🎉'}]}/>;}
