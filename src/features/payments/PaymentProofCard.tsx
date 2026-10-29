@@ -19,6 +19,7 @@ export default function PaymentProofCard({
   onRestore?: () => void;
   onReport?: () => void;
 }) {
+  
   return (
     <View className="mb-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
       <View className="flex-row items-start justify-between gap-2">

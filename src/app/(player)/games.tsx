@@ -6,6 +6,7 @@ import GameList from "@/features/games/GameList";
 import { GameService } from "@/services/game.service";
 import { GameStatus, type Game } from "@/types/game";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
+import { fliterGames } from "@/shared/filterGames";
 const mockGames: Game[] = [
   {
     id: 1,
@@ -80,6 +81,7 @@ export default function GamesScreen() {
   useEffect(() => {
     void refresh();
   }, []);
+  console.log("games", games)
   return (
     <View className="flex-1 bg-slate-50 px-5 pt-4 dark:bg-slate-950">
       <View className="mb-6 flex-row items-center">
@@ -111,11 +113,7 @@ export default function GamesScreen() {
         </Text>
       ) : null}
       <View className="mb-5 flex-row gap-2">
-        {[
-          { label: "All Games", value: "ALL" },
-          { label: "Open", value: "ACTIVE" },
-          { label: "Upcoming", value: "PENDING" },
-        ].map((x) => (
+        {fliterGames.map((x) => (
           <Pressable
             key={x.value}
             onPress={() => setFilter(x.value as typeof filter)}

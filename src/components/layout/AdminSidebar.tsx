@@ -1,3 +1,4 @@
+import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import { router, usePathname } from "expo-router";
 import {
   Activity,
@@ -16,7 +17,6 @@ import {
 } from "lucide-react-native";
 import { Pressable, ScrollView, View } from "react-native";
 import SidebarMenu, { type SidebarItem } from "../common/SidebarMenu";
-import { TranslatedText as Text } from "@/components/common/TranslatedText";
 type Props = { visible: boolean; onClose: () => void };
 export default function AdminSidebar({ visible, onClose }: Props) {
   const path = usePathname();
@@ -97,6 +97,12 @@ export default function AdminSidebar({ visible, onClose }: Props) {
       icon: Settings,
       active: path.endsWith("/settings"),
       onPress: () => go("/(admin)/settings"),
+    },
+    {
+      label: "Player Dasboard",
+      icon: LayoutDashboard,
+      active: path.endsWith("/dashboard") || path.endsWith("/home"),
+      onPress: () => go("/(player)/dashboard"),
     },
   ];
   return (

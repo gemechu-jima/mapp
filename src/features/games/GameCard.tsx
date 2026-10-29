@@ -1,8 +1,8 @@
-import { GameStatus, type Game } from '@/types/game';
-import { Clock3, Hash } from 'lucide-react-native';
-import { Pressable, View } from 'react-native';
+import { GameStatus, type Game } from "@/types/game";
+import { Clock3, Hash } from "lucide-react-native";
+import { Pressable, View } from "react-native";
 
-import { TranslatedText as Text } from '@/components/common/TranslatedText';
+import { TranslatedText as Text } from "@/components/common/TranslatedText";
 type GameCardProps = {
   game: Game;
   onPress: (game: Game) => void;
@@ -13,11 +13,10 @@ export default function GameCard({ game, onPress }: GameCardProps) {
 
   const statusLabel =
     game.status === GameStatus.ACTIVE
-      ? 'OPEN'
+      ? "OPEN"
       : game.status === GameStatus.PENDING
-        ? 'STARTING SOON'
+        ? "STARTING SOON"
         : game.status;
-
 
   return (
     <View className="mb-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
@@ -35,28 +34,30 @@ export default function GameCard({ game, onPress }: GameCardProps) {
         <View
           className={`rounded-3xl px-3 py-1 ${
             game.status === GameStatus.ACTIVE
-              ? 'bg-green-100'
+              ? "bg-green-100"
               : game.status === GameStatus.PENDING
-                ? 'bg-amber-100'
+                ? "bg-amber-100"
                 : game.status === GameStatus.DRAWING
-                  ? 'bg-blue-100'
+                  ? "bg-blue-100"
                   : game.status === GameStatus.COMPLETED
-                    ? 'bg-slate-200'
-                    : 'bg-red-100'
+                    ? "bg-slate-200"
+                    : "bg-red-100"
           }`}
         >
-          <Text className={`text-xs font-semibold ${
-            game.status === GameStatus.ACTIVE
-              ? 'text-green-700'
-              : game.status === GameStatus.PENDING
-                ? 'text-amber-700'
-                : game.status === GameStatus.DRAWING
-                  ? 'text-blue-700'
-                  : game.status === GameStatus.COMPLETED
-                    ? 'text-slate-700'
-                    : 'text-red-700'
-          }`}>
-            {statusLabel.replace('_', ' ')}
+          <Text
+            className={`text-xs font-semibold ${
+              game.status === GameStatus.ACTIVE
+                ? "text-green-700"
+                : game.status === GameStatus.PENDING
+                  ? "text-amber-700"
+                  : game.status === GameStatus.DRAWING
+                    ? "text-blue-700"
+                    : game.status === GameStatus.COMPLETED
+                      ? "text-slate-700"
+                      : "text-red-700"
+            }`}
+          >
+            {statusLabel.replace("_", " ")}
           </Text>
         </View>
       </View>
@@ -86,33 +87,41 @@ export default function GameCard({ game, onPress }: GameCardProps) {
           </Text>
         </View>
       </View>
-     
-      {game.status === GameStatus.PENDING ? <View className="mb-4 items-center rounded-xl border border-dashed border-amber-300 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950"><Text className="text-2xl">🔒</Text><Text className="mt-1 font-semibold text-amber-800 dark:text-amber-200">Coming soon</Text><Text className="mt-1 text-center text-xs text-amber-700 dark:text-amber-300">This game will open when the admin starts it.</Text></View> : null}
+
+      {game.status === GameStatus.PENDING ? (
+        <View className="mb-4 items-center rounded-xl border border-dashed border-amber-300 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950">
+          <Text className="text-2xl">🔒</Text>
+          <Text className="mt-1 font-semibold text-amber-800 dark:text-amber-200">
+            Coming soon
+          </Text>
+          <Text className="mt-1 text-center text-xs text-amber-700 dark:text-amber-300">
+            This game will open when the admin starts it.
+          </Text>
+        </View>
+      ) : null}
       <Pressable
         onPress={() => onPress(game)}
         disabled={!isActive}
         className={`items-center rounded-xl p-3 ${
-          isActive ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+          isActive ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-700"
         }`}
       >
-       
         <Text
           className={`font-semibold ${
-            isActive ? 'text-white' : 'text-slate-600 dark:text-slate-300'
+            isActive ? "text-white" : "text-slate-600 dark:text-slate-300"
           }`}
         >
           {isActive
-            ? 'View Game'
+            ? "View Game"
             : game.status === GameStatus.PENDING
-              ? 'Waiting to Start'
+              ? "Waiting to Start"
               : game.status === GameStatus.DRAWING
-                ? 'Game in Progress'
+                ? "Game in Progress"
                 : game.status === GameStatus.COMPLETED
-                  ? 'Game Completed'
-                  : 'Game Cancelled'}
+                  ? "Game Completed"
+                  : "Game Cancelled"}
         </Text>
       </Pressable>
-      
     </View>
   );
 }

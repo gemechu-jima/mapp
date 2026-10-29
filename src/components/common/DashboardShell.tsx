@@ -1,23 +1,32 @@
-import { useState, type ReactNode } from "react";
-import { Pressable, View } from "react-native";
-import { router } from "expo-router";
-import { Bell } from "lucide-react-native";
 import HamburgerButton from "@/components/common/HamburgerButton";
 import PublicHeader from "@/components/common/PublicHeader";
-import PlayerSidebar from "@/components/layout/PlayerSidebar";
-import AdminSidebar from "@/components/layout/AdminSidebar";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
+import AdminSidebar from "@/components/layout/AdminSidebar";
+import PlayerSidebar from "@/components/layout/PlayerSidebar";
 import { useAuth } from "@/context/AuthContext";
+import { router } from "expo-router";
+import { Bell } from "lucide-react-native";
+import { useState, type ReactNode } from "react";
+import { Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = { role: "player" | "admin"; children: ReactNode };
 
 export default function DashboardShell({ role, children }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const title = role === "admin" ? "Bingo Admin" : "Bingo";
 
   return (
-    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
+    <View
+      style={{
+        flex: 1,
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+      }}
+      className="flex-1 bg-slate-50 dark:bg-slate-950"
+    >
       <View className="z-20 flex-row items-center justify-between border-b border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950">
         <View className="flex-row items-center gap-2">
           <HamburgerButton onPress={() => setMenuOpen(true)} />

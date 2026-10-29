@@ -2,7 +2,7 @@
 import { registerUser } from '@/services/auth.service';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Alert, Platform, Pressable, View } from 'react-native';
 import PublicHeader from '../../components/common/PublicHeader';
 import { useTranslation } from 'react-i18next';
 import { translateUiText } from '@/i18n/uiTranslations';
@@ -13,7 +13,9 @@ export default function RegisterScreen() {
   const [lastName, setLastName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const { i18n } = useTranslation();
-  const notify = (message: string) => { const localized = translateUiText(message, i18n.language); if (Platform.OS === 'web') window.alert(localized); else Alert.alert('Bingo', localized); };
+  const notify = (message: string) => { const localized = translateUiText(message, i18n.language);
+     if (Platform.OS === 'web') window.alert(localized)
+      else Alert.alert('Bingo', localized); };
 
 
   const handleRegister =async () => {

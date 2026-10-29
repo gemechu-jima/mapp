@@ -1,6 +1,8 @@
+import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import { router, usePathname } from "expo-router";
 import {
   Bell,
+  CreditCard,
   Gamepad2,
   LayoutDashboard,
   Settings,
@@ -8,11 +10,9 @@ import {
   Trophy,
   UserRound,
   X,
-  CreditCard,
 } from "lucide-react-native";
 import { Pressable, ScrollView, View } from "react-native";
 import SidebarMenu, { type SidebarItem } from "../common/SidebarMenu";
-import { TranslatedText as Text } from "@/components/common/TranslatedText";
 type Props = { visible: boolean; onClose: () => void };
 export default function PlayerSidebar({ visible, onClose }: Props) {
   const path = usePathname();
@@ -69,6 +69,12 @@ export default function PlayerSidebar({ visible, onClose }: Props) {
       icon: Settings,
       active: path.endsWith("/settings"),
       onPress: () => go("/(player)/settings"),
+    },
+    {
+      label: "Admin Dasboard",
+      icon: LayoutDashboard,
+      active: path.endsWith("/dashboard"),
+      onPress: () => go("/(admin)/dashboard"),
     },
   ];
   return (
