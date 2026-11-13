@@ -107,7 +107,7 @@ export default function AdminPayments() {
                   </Text>
                 ) : null}
                 <Text className="mt-1 text-xs text-slate-400">
-                  Submitted: {new Date(proof.submittedAt).toLocaleString()}
+                  Submitted: {new Date(proof.submittedAt || proof.createdAt || Date.now()).toLocaleString()}
                 </Text>
               </View>
               <StatusPill status={proof.status} />

@@ -22,7 +22,6 @@ export default function GameDetailsScreen() {
   const total = Number(params.totalNumbers);
   const minutes = Number(params.reservationMinutes) || 5;
   const { user } = useAuth();
-  const userId = user?.id || 1;
   const [numbers, setNumbers] = useState<NumberCell[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,9 +69,12 @@ export default function GameDetailsScreen() {
       return;
     }
 
-    // Replace userId with the ID of the currently logged-in user.
-    if (!userId || !gameId || !minutes) {
-      Alert.alert("Error", "Missing user or game information.");
+    if (!user?.id) {
+      Alert.alert("Login required", "Please log in again to reserve numbers.");
+      return;
+    }
+    if (!gameId || !minutes) {
+      Alert.alert("Error", "Missing game information.");
       return;
     }
 
@@ -97,7 +99,6 @@ export default function GameDetailsScreen() {
 
       for (const number of selectedNumbers) {
         const reserved = await NumberService.reserve({
-          userId,
           numberId: number.id,
           gameId,
           minutes,

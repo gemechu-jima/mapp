@@ -32,7 +32,7 @@ export interface ReservationResponse {
 export type Reservation = ReservationResponse;
 
 export interface CreateReservationDto {
-  userId: string | number;
+  userId?: string | number;
   numberId: number;
   gameId: number;
   minutes: number;

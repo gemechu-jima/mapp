@@ -5,7 +5,6 @@ export enum GameStatus {
     DRAWING = "DRAWING",
     COMPLETED = 'COMPLETED',
     CANCELLED = "CANCELLED",
-
 }
 export  interface GameIdProps{
    gameId:number
@@ -25,11 +24,18 @@ export interface Game {
 }
 
 export interface CreateGameDto {
-  id:string;
   title: string;
   totalNumbers: number;
   reservationMinutes: number;
-  createdBy: string;
+  numberPrice?: number;
+  prizeDistribution?: {
+    first: number;
+    second: number;
+    third: number;
+    fourth?: number;
+    system?: number;
+  };
+  createdBy?: number | string;
 }
 
 export interface ResponseGame{

@@ -103,6 +103,7 @@ export default function PlayerPayments() {
         const formData = new FormData();
         formData.append("provider", selectedPayment.type);
         formData.append("reservationId", resId);
+        formData.append("numberId", resId);
         formData.append("transactionReference", reference.trim());
         formData.append("proofUrl", uploadedImage.url);
         formData.append("proof", proofFile);

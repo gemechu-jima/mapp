@@ -31,7 +31,7 @@ export interface ResponseGameNumber {
 }
 
 export interface ReserveNumberDto {
-  userId: string | number;
+  userId?: string | number;
   numberId: number;
   gameId: number;
   minutes: number;

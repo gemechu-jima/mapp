@@ -1,38 +1,28 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
+
+const RENDER_API_URL = 'https://bbackend-f1hk.onrender.com/api/v1';
 
 function getBaseUrl(): string {
-  // If explicitly overridden via .env
-  if (process.env.EXPO_PUBLIC_API_URL) {
-    return process.env.EXPO_PUBLIC_API_URL;
+  const envUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
+  if (envUrl) {
+    return envUrl.replace(/\/$/, '');
   }
 
-  // Running on Web (Browser on your laptop/desktop)
-  if (Platform.OS === 'web') {
+  // In local/dev runs prefer local backend unless EXPO_PUBLIC_API_URL overrides it.
+  if (__DEV__) {
     return 'http://localhost:3000/api/v1';
   }
 
-  // Running on Mobile (Expo Go / Physical Device / Emulator)
-  // 1. Try to auto-detect the dev machine host IP that Expo bundler connects to
-  const hostUri = Constants.expoConfig?.hostUri || (Constants as any).manifest2?.extra?.expoGo?.debuggerHost;
-  if (hostUri) {
-    const ip = hostUri.split(':')[0];
-    if (ip) {
-      return `http://${ip}:3000/api/v1`;
-    }
-  }
-
-  // 2. Default LAN IP for physical mobile devices on your local network
-  return 'http://10.34.30.153:3000/api/v1';
+  return RENDER_API_URL;
 }
 
 export const api = axios.create({
   baseURL: getBaseUrl(),
-  timeout: 10000,
+  timeout: 60000, // 60s timeout so Render free-tier cold starts don't fail
   headers: {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
+    "Content-Type": "multipart/form-data",
+
   },
 });
 

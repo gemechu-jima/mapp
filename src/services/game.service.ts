@@ -1,6 +1,5 @@
 import { api } from './api';
-import type { CreateGameDto, Game } from '@/types/game';
-
+import { GameStatus, type CreateGameDto, type Game } from '@/types/game';
 export const GameService = {
   async create(data: CreateGameDto): Promise<Game> {
     return (await api.post<Game>('/games', data)).data;
@@ -26,7 +25,22 @@ export const GameService = {
   async cancel(id: number): Promise<Game> {
     return (await api.patch<Game>(`/games/${id}/cancel`)).data;
   },
+
   async deleteGame(id: number): Promise<void> {
     await api.delete(`/games/${id}`);
+  },
+async updateStatus(id: number | string, status: GameStatus): Promise<Game> {
+    const numericId = Number(id);
+
+    switch (status) {
+      case GameStatus.ACTIVE:
+        return this.activeGame(numericId);
+      case GameStatus.COMPLETED:
+        return this.closeGame(numericId);
+      case GameStatus.CANCELLED:
+        return this.cancel(numericId);
+      default:
+        throw new Error(`Unsupported status transition: ${status}`);
+    }
   },
 };
