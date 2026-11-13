@@ -1,38 +1,51 @@
-import { useState } from "react";
-import { Alert, Platform } from "react-native";
-import ManagementList, {
-  type RecordItem,
-} from "@/features/shared/ManagementList";
+import { useAuth } from "@/context/AuthContext";
 import GameAdminForm from "@/features/games/GameAdminForm";
 import FeatureNotice from "@/features/shared/FeatureNotice";
-const initial: RecordItem[] = [
-  {
-    id: 101,
-    title: "Weekend Bingo",
-    subtitle: "50 numbers · 5-minute reservation · 3 winners",
-    status: "ACTIVE",
-    detail: "Price: 100 ETB per number",
-  },
-  {
-    id: 102,
-    title: "Evening Bingo",
-    subtitle: "30 numbers · 7-minute reservation · 3 winners",
-    status: "PENDING",
-    detail: "Scheduled game",
-  },
-  {
-    id: 103,
-    title: "Friday Bingo",
-    subtitle: "40 numbers · 5-minute reservation · 3 winners",
-    status: "COMPLETED",
-    detail: "Results published",
-  },
-];
+import ManagementList, { type RecordItem } from "@/features/shared/ManagementList";
+import { GameService } from "@/services/game.service";
+import type { Game } from "@/types/game";
+import { useEffect, useState } from "react";
+import { Alert, Platform } from "react-native";
+
+function gameToRecord(g: Game): RecordItem {
+  return {
+    id: g.id,
+    title: g.title,
+    subtitle: `${g.totalNumbers} numbers · ${g.reservationMinutes}-min reservation`,
+    status: g.status,
+    detail: `Game ID: ${g.id}`,
+  };
+}
+
 export default function AdminGames() {
-  const [records, setRecords] = useState(initial);
+  const { user } = useAuth();
+  const [records, setRecords] = useState<RecordItem[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
   const [form, setForm] = useState(false);
-  const [notice, setNotice] = useState("");
-  const save = (g: {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const notify = (title: string, msg: string) =>
+    Platform.OS === "web"
+      ? window.alert(`${title}\n${msg}`)
+      : Alert.alert(title, msg);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const list = await GameService.getAll();
+      setGames(list);
+      setRecords(list.map(gameToRecord));
+    } catch {
+      // Backend unavailable – keep empty
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { void load(); }, []);
+
+  const save = async (g: {
     title: string;
     totalNumbers: number;
     reservationMinutes: number;
@@ -46,21 +59,43 @@ export default function AdminGames() {
       system: number;
     };
   }) => {
-    setRecords((old) => [
-      {
-        id: Date.now(),
+    if (!user?.id) {
+      notify("Error", "You must be logged in as admin to create a game.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const created = await GameService.create({
+        id: "",
         title: g.title,
-        subtitle: `${g.totalNumbers} numbers · ${g.reservationMinutes}-minute reservation · ${g.winnerCount} winners`,
-        status: "PENDING",
-        detail: `Price: ${g.numberPrice} ETB per number · Prize shares: ${g.prizeDistribution.first}/${g.prizeDistribution.second}/${g.prizeDistribution.third}/${g.prizeDistribution.fourth}/${g.prizeDistribution.system}%`,
-      },
-      ...old,
-    ]);
-    setForm(false);
-    setNotice(
-      "Game added to this frontend demo. Connect GameService to persist it.",
-    );
+        totalNumbers: g.totalNumbers,
+        reservationMinutes: g.reservationMinutes,
+        createdBy: user.id,
+      });
+      setGames((old) => [created, ...old]);
+      setRecords((old) => [gameToRecord(created), ...old]);
+      setForm(false);
+      notify("Game created", `"${created.title}" has been created and is now PENDING.`);
+    } catch (e: any) {
+      notify(
+        "Create failed",
+        e?.response?.data?.message ?? "Could not create the game. Please try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleAction = async (record: RecordItem) => {
+    const game = games.find((g) => g.id === record.id);
+    if (!game) return;
+
+    const msg = `${record.title}\n${record.subtitle}\nStatus: ${record.status}`;
+    if (Platform.OS === "web") window.alert(msg);
+    else Alert.alert(record.title, msg);
+  };
+
   return (
     <ManagementList
       title="Manage games"
@@ -79,21 +114,18 @@ export default function AdminGames() {
           icon: "🏁",
         },
       ]}
-      actionLabel={form ? "Close create form" : "Create game"}
+      actionLabel={form ? "Close form" : "Create game"}
       onAction={() => setForm((v) => !v)}
-      onSelect={(r) => {
-        const msg = `${r.title}
-${r.subtitle}
-${r.detail || ""}`;
-        if (Platform.OS === "web") window.alert(msg);
-        else Alert.alert(r.title, msg);
-      }}
+      onSelect={handleAction}
     >
-      {notice ? (
-        <FeatureNotice title="Game created in demo" body={notice} />
+      {loading ? (
+        <FeatureNotice title="Loading games…" body="Fetching games from the backend." />
       ) : null}
       {form ? (
-        <GameAdminForm onCancel={() => setForm(false)} onSave={save} />
+        <GameAdminForm
+          onCancel={() => setForm(false)}
+          onSave={save}
+        />
       ) : null}
     </ManagementList>
   );

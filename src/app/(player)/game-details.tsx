@@ -4,7 +4,6 @@ import { useAuth } from "@/context/AuthContext";
 import NumberGrid, { type NumberCell } from "@/features/numbers/NumberGrid";
 import FeatureNotice from "@/features/shared/FeatureNotice";
 import { NumberService } from "@/services/number.service";
-import { ReservationService } from "@/services/reservation.service";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, Clock3, Hash } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
@@ -21,24 +20,15 @@ export default function GameDetailsScreen() {
   const gameId = Number(params.gameId);
   const title = params.title;
   const total = Number(params.totalNumbers);
-  const minutes = Number(params.reservationMinutes);
+  const minutes = Number(params.reservationMinutes) || 5;
   const { user } = useAuth();
-  const userId = user?.id;
-  const [numbers, setNumbers] = useState<NumberCell[]>(() =>
-    Array.from({ length: total }, (_, i) => ({
-      id: i + 1,
-      number: i + 1,
-      status: (i % 11 === 0
-        ? "CONFIRMED"
-        : i % 7 === 0
-          ? "RESERVED"
-          : "AVAILABLE") as NumberCell["status"],
-    })),
-  );
+  const userId = user?.id || 1;
+  const [numbers, setNumbers] = useState<NumberCell[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
-  const [demo, setDemo] = useState(true);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     let active = true;
+    setLoading(true);
     NumberService.getByGame(gameId)
       .then((res: any) => {
         const list = Array.isArray(res)
@@ -46,7 +36,7 @@ export default function GameDetailsScreen() {
           : Array.isArray(res?.data)
             ? res.data
             : [];
-        if (active && list.length) {
+        if (active) {
           setNumbers(
             list.map((n: any) => ({
               id: n.id,
@@ -54,10 +44,10 @@ export default function GameDetailsScreen() {
               status: n.status,
             })),
           );
-          setDemo(false);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (active) setLoading(false); });
     return () => {
       active = false;
     };
@@ -71,11 +61,11 @@ export default function GameDetailsScreen() {
       Alert.alert("Select numbers", "Please select at least one number.");
       return;
     }
-    console.log("test");
-    if (demo) {
+
+    if (loading || numbers.length === 0) {
       Alert.alert(
         "Numbers unavailable",
-        "Real reservations require numbers loaded from the backend.",
+        "Numbers are still loading from the server. Please wait.",
       );
       return;
     }
@@ -86,9 +76,9 @@ export default function GameDetailsScreen() {
       return;
     }
 
-    // Find the actual database number records, not just displayed numbers.
+    // Find the actual database number records by their database ID (n.id)
     const selectedNumbers = numbers.filter(
-      (n) => selected.includes(n.number) && n.status === "AVAILABLE",
+      (n) => selected.includes(n.id) && n.status === "AVAILABLE",
     );
 
     if (selectedNumbers.length !== selected.length) {
@@ -102,18 +92,18 @@ export default function GameDetailsScreen() {
     try {
       setSubmitting(true);
 
-      // Create a database reservation for each selected number.
-      const reservations = [];
+      // Reserve each selected number directly on the number table.
+      const reservedNumbers = [];
 
       for (const number of selectedNumbers) {
-        const reservation = await ReservationService.createReservation({
+        const reserved = await NumberService.reserve({
           userId,
           numberId: number.id,
           gameId,
           minutes,
         });
 
-        reservations.push(reservation);
+        reservedNumbers.push(reserved);
       }
 
       // Update the local screen after the backend creates the reservations.
@@ -125,13 +115,14 @@ export default function GameDetailsScreen() {
         ),
       );
 
-      // Pass the real reservation IDs to the payment screen.
+      // Pass the number IDs to the payment screen.
+      const selectedNumberValues = selectedNumbers.map((n) => n.number).join(",");
       router.push({
         pathname: "/(player)/payments",
         params: {
-          reservationIds: reservations.map((r) => r.id).join(","),
+          reservationIds: reservedNumbers.map((r) => r.id).join(","),
           gameId: String(gameId),
-          numbers: selected.join(","),
+          numbers: selectedNumberValues,
           gameTitle: title ?? "",
         },
       });
@@ -209,11 +200,11 @@ export default function GameDetailsScreen() {
           </Text>
         </View>
       </View>
-      {demo ? (
+      {loading ? (
         <View className="mt-4">
           <FeatureNotice
-            title="Sample number inventory"
-            body="Showing a demo number board. Real availability and reservation locking must be checked by the backend."
+            title="Loading numbers..."
+            body="Fetching live number inventory and availability from the server."
           />
         </View>
       ) : null}

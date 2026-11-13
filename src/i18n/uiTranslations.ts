@@ -283,6 +283,7 @@ const uiTranslations: Record<string, { am: string; or: string }> = {
   'Don’t have an account?': { am: 'መለያ የለዎትም?', or: 'Herrega hin qabduu?' },
 
   'Payment confirmations, restore actions, draw triggers, permission changes and exceptional corrections should be recorded with actor, timestamp, reason and before/after values.': { am: 'የክፍያ ማረጋገጫዎች፣ የመመለስ እርምጃዎች፣ የዕጣ ማስጀመሪያዎች፣ የፈቃድ ለውጦች እና ልዩ ማስተካከያዎች ከአድራጊ፣ ጊዜ፣ ምክንያት እና ከቀድሞ/በኋላ እሴቶች ጋር መመዝገብ አለባቸው።', or: 'Mirkaneessiin kaffaltii, gochi deebisuu, jalqabbii qooduu, jijjiirama hayyamaa fi sirreeffamni addaa nama raawwate, yeroo, sababa fi gatii duraa/boodaa waliin galmaa’uu qabu.' },
+  
 };
 
 export function translateUiText(value: string, language: string): string {

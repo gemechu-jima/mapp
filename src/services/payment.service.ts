@@ -21,6 +21,6 @@ export const PaymentService = {
     return (await api.post(`/payments/${id}/mistake-reports`, data)).data;
   },
   async restoreExpiredReservation(id: number): Promise<unknown> {
-    return (await api.post(`/reservations/${id}/restore`)).data;
+    return (await api.post(`/numbers/${id}/restore`)).data;
   },
 };

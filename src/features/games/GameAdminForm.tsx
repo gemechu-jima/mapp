@@ -40,6 +40,7 @@ export default function GameAdminForm({
     Number(third) +
     Number(fourth) +
     Number(system);
+
   return (
     <View className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
       <Text className="mb-4 text-lg font-bold text-slate-900 dark:text-white">

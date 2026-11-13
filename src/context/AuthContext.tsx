@@ -1,5 +1,14 @@
-
-import {createContext,useCallback,useContext,useMemo,useState,type ReactNode,} from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setAuthToken } from '@/services/api';
 
 export type UserRole = 'PLAYER' | 'ADMIN';
 
@@ -20,6 +29,8 @@ type AuthContextType = {
   hasRole: (role: UserRole) => boolean;
 };
 
+const AUTH_KEY = 'bingo_auth';
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 type AuthProviderProps = {
@@ -29,25 +40,41 @@ type AuthProviderProps = {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = useCallback(
-    (authenticatedUser: AuthUser, accessToken: string) => {
-      setUser(authenticatedUser);
-      setToken(accessToken);
-    },
-    []
-  );
+  // Restore session on startup
+  useEffect(() => {
+    AsyncStorage.getItem(AUTH_KEY)
+      .then((raw: string | null) => {
+        if (raw) {
+          const saved = JSON.parse(raw) as { user: AuthUser; token: string };
+          setUser(saved.user);
+          setToken(saved.token);
+          setAuthToken(saved.token);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const login = useCallback((authenticatedUser: AuthUser, accessToken: string) => {
+    setUser(authenticatedUser);
+    setToken(accessToken);
+    setAuthToken(accessToken);
+    AsyncStorage.setItem(
+      AUTH_KEY,
+      JSON.stringify({ user: authenticatedUser, token: accessToken }),
+    ).catch(() => {});
+  }, []);
 
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
+    setAuthToken(null);
+    AsyncStorage.removeItem(AUTH_KEY).catch(() => {});
   }, []);
 
-  const hasRole = useCallback(
-    (role: UserRole) => user?.role === role,
-    [user]
-  );
+  const hasRole = useCallback((role: UserRole) => user?.role === role, [user]);
 
   const value = useMemo(
     () => ({
@@ -59,23 +86,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
       logout,
       hasRole,
     }),
-    [user, token, isLoading, login, logout, hasRole]
+    [user, token, isLoading, login, logout, hasRole],
   );
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
 
   if (context === undefined) {
-    throw new Error(
-      'useAuth must be used inside an AuthProvider'
-    );
+    throw new Error('useAuth must be used inside an AuthProvider');
   }
 
   return context;

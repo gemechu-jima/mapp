@@ -4,9 +4,10 @@ import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import PlayerSidebar from "@/components/layout/PlayerSidebar";
 import { useAuth } from "@/context/AuthContext";
+import { PaymentService } from "@/services/payment.service";
 import { router } from "expo-router";
 import { Bell } from "lucide-react-native";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -14,9 +15,23 @@ type Props = { role: "player" | "admin"; children: ReactNode };
 
 export default function DashboardShell({ role, children }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const title = role === "admin" ? "Bingo Admin" : "Bingo";
+
+  useEffect(() => {
+    if (role === "admin") {
+      PaymentService.getAll()
+        .then((list) => {
+          const pending = list.filter(
+            (p) => p.status === "SUBMITTED" || p.status === "UNDER_REVIEW"
+          ).length;
+          setUnreadCount(pending);
+        })
+        .catch(() => {});
+    }
+  }, [role]);
 
   return (
     <View
@@ -60,9 +75,16 @@ export default function DashboardShell({ role, children }: Props) {
                   : "/(player)/notifications",
               )
             }
-            className="rounded-xl p-2"
+            className="relative rounded-xl p-2"
           >
             <Bell size={20} color="#64748b" />
+            {role === "admin" && unreadCount > 0 ? (
+              <View className="absolute right-1 top-1 h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1">
+                <Text className="text-[10px] font-bold text-white">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </Text>
+              </View>
+            ) : null}
           </Pressable>
         </View>
       </View>

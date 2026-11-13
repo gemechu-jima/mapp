@@ -1,4 +1,5 @@
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
+import { useAuth } from "@/context/AuthContext";
 import { router, usePathname } from "expo-router";
 import {
   Activity,
@@ -10,6 +11,7 @@ import {
   Hash,
   LayoutDashboard,
   LockKeyhole,
+  LogOut,
   Settings,
   Ticket,
   Users,
@@ -17,14 +19,20 @@ import {
 } from "lucide-react-native";
 import { Pressable, ScrollView, View } from "react-native";
 import SidebarMenu, { type SidebarItem } from "../common/SidebarMenu";
+
 type Props = { visible: boolean; onClose: () => void };
+
 export default function AdminSidebar({ visible, onClose }: Props) {
   const path = usePathname();
+  const { logout } = useAuth();
+
   if (!visible) return null;
+
   const go = (route: string) => {
     onClose();
     router.push(route as never);
   };
+
   const items: SidebarItem[] = [
     {
       label: "Dashboard",
@@ -98,13 +106,8 @@ export default function AdminSidebar({ visible, onClose }: Props) {
       active: path.endsWith("/settings"),
       onPress: () => go("/(admin)/settings"),
     },
-    {
-      label: "Player Dasboard",
-      icon: LayoutDashboard,
-      active: path.endsWith("/dashboard") || path.endsWith("/home"),
-      onPress: () => go("/(player)/dashboard"),
-    },
   ];
+
   return (
     <View className="absolute inset-0 z-50 flex-row">
       <Pressable onPress={onClose} className="absolute inset-0 bg-black/50" />
@@ -133,9 +136,21 @@ export default function AdminSidebar({ visible, onClose }: Props) {
               All modules
             </Text>
             <Text className="mt-1 text-xs leading-5 text-blue-800 dark:text-blue-300">
-              Frontend demo screens are ready for backend integration.
+              Frontend screens ready for backend integration.
             </Text>
           </View>
+          {/* Logout */}
+          <Pressable
+            onPress={() => {
+              onClose();
+              logout();
+              router.replace("/auth/login");
+            }}
+            className="mt-4 flex-row items-center gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-700"
+          >
+            <LogOut size={18} color="#ef4444" />
+            <Text className="font-semibold text-red-500">Log out</Text>
+          </Pressable>
         </ScrollView>
       </View>
     </View>

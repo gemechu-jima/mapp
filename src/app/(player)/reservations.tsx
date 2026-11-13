@@ -7,6 +7,7 @@ import ReservationCard from "@/features/reservations/ReservationCard";
 import { ReservationService } from "@/services/reservation.service";
 import { useAuth } from "@/context/AuthContext";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
+
 type Item = {
   id: number;
   gameId: number;
@@ -17,45 +18,18 @@ type Item = {
   displayName: string;
   userId: number;
 };
-const demo: Item[] = [
-  {
-    id: 501,
-    gameId: 1,
-    game: "Weekend Bingo",
-    number: 8,
-    status: "PENDING",
-    expiresAt: new Date(Date.now() + 3 * 60 * 1000).toISOString(),
-    displayName: "Gemechu J.",
-    userId: 1,
-  },
-  {
-    id: 502,
-    gameId: 1,
-    game: "Weekend Bingo",
-    number: 21,
-    status: "CONFIRMED",
-    displayName: "Aster M.",
-    userId: 2,
-  },
-  {
-    id: 498,
-    gameId: 2,
-    game: "Evening Bingo",
-    number: 4,
-    status: "EXPIRED",
-    displayName: "Dawit K.",
-    userId: 3,
-  },
-];
+
 export default function ReservationsScreen() {
-  const [items, setItems] = useState(demo);
+  const [items, setItems] = useState<Item[]>([]);
   const [view, setView] = useState<"MINE" | "ALL">("MINE");
   const [filter, setFilter] = useState("ALL");
-  const [usingDemo, setUsingDemo] = useState(true);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const id=user? user.id :"";
+  const id = user ? user.id : "";
+
   useEffect(() => {
     let alive = true;
+    setLoading(true);
     (async () => {
       try {
         const response: any =
@@ -67,7 +41,7 @@ export default function ReservationsScreen() {
           : Array.isArray(response?.data)
             ? response.data
             : [];
-        if (alive && list.length) {
+        if (alive) {
           setItems(
             list.map((r: any) => ({
               id: r.id,
@@ -80,53 +54,63 @@ export default function ReservationsScreen() {
               userId: r.userId,
             })),
           );
-          setUsingDemo(false);
         }
       } catch {
-        if (alive) setUsingDemo(true);
+        if (alive) setItems([]);
+      } finally {
+        if (alive) setLoading(false);
       }
     })();
     return () => {
       alive = false;
     };
   }, [view, user?.id]);
+
   const filtered = items.filter(
     (x) =>
-      (view === "ALL" ||
-        x.userId === Number(user?.id) ||
-        (user?.id === "demo-001" && x.userId === 1)) &&
+      (view === "ALL" || x.userId === Number(user?.id)) &&
       (filter === "ALL" || x.status === filter),
   );
+
   const notify = (title: string, msg: string) =>
     Platform.OS === "web"
       ? window.alert(`${title}\n${msg}`)
       : Alert.alert(title, msg);
-  const cancel = (id: number) => {
-    const apply = () => {
-      setItems((old) =>
-        old.map((r) =>
-          r.id === id && r.status === "PENDING"
-            ? { ...r, status: "CANCELLED" }
-            : r,
-        ),
-      );
-      notify(
-        "Reservation cancelled",
-        "Demo state updated. The backend must release the number atomically.",
-      );
+
+  const cancel = async (itemId: number) => {
+    const apply = async () => {
+      try {
+        await ReservationService.cancel(itemId);
+        setItems((old) =>
+          old.map((r) =>
+            r.id === itemId && r.status === "PENDING"
+              ? { ...r, status: "CANCELLED" }
+              : r,
+          ),
+        );
+        notify("Reservation cancelled", "The number has been released.");
+      } catch (e: any) {
+        notify(
+          "Cancel failed",
+          e?.response?.data?.message ?? "Could not cancel the reservation.",
+        );
+      }
     };
+
     if (Platform.OS === "web") {
-      if (window.confirm("Cancel this pending reservation?")) apply();
-    } else
+      if (window.confirm("Cancel this pending reservation?")) await apply();
+    } else {
       Alert.alert("Cancel reservation", "Cancel this pending reservation?", [
         { text: "Keep", style: "cancel" },
-        { text: "Cancel", style: "destructive", onPress: apply },
+        { text: "Cancel", style: "destructive", onPress: () => apply() },
       ]);
+    }
   };
+
   return (
     <Screen
       title="Reservations"
-      subtitle="View your reservations or browse public reservation statuses. Private phone numbers and payment details are not shown."
+      subtitle="View your reservations or browse public reservation statuses."
     >
       <View className="mb-4 flex-row gap-2">
         <View className="flex-1">
@@ -144,13 +128,7 @@ export default function ReservationsScreen() {
           />
         </View>
       </View>
-      {usingDemo ? (
-        <View className="mb-4 rounded-xl bg-blue-50 p-3 dark:bg-blue-950">
-          <Text className="text-xs leading-5 text-blue-800 dark:text-blue-200">
-            Showing sample reservations while backend data is unavailable.
-          </Text>
-        </View>
-      ) : null}
+
       <View className="mb-4 flex-row flex-wrap gap-2">
         {["ALL", "PENDING", "CONFIRMED", "CANCELLED", "EXPIRED"].map((s) => (
           <Pressable
@@ -166,7 +144,14 @@ export default function ReservationsScreen() {
           </Pressable>
         ))}
       </View>
-      {filtered.length ? (
+
+      {loading ? (
+        <View className="items-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 dark:border-slate-700 dark:bg-slate-900">
+          <Text className="text-slate-500 dark:text-slate-400">
+            Loading reservations…
+          </Text>
+        </View>
+      ) : filtered.length ? (
         filtered.map((r) => (
           <ReservationCard
             key={r.id}

@@ -1,6 +1,6 @@
 import "../global.css";
 import "../i18n";
-
+import 'react-native-url-polyfill/auto';
 import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 

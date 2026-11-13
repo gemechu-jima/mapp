@@ -4,57 +4,17 @@ import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import GameList from "@/features/games/GameList";
 import { GameService } from "@/services/game.service";
-import { GameStatus, type Game } from "@/types/game";
+import { type Game } from "@/types/game";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import { fliterGames } from "@/shared/filterGames";
-const mockGames: Game[] = [
-  {
-    id: 1,
-    title: "Weekend Bingo",
-    totalNumbers: 50,
-    status: GameStatus.ACTIVE,
-    createdBy: 1,
-    reservationMinutes: 5,
-    createdAt: "2026-10-20T08:00:00.000Z",
-    updatedAt: "2026-10-20T08:00:00.000Z",
-  },
-  {
-    id: 2,
-    title: "Evening Bingo",
-    totalNumbers: 30,
-    status: GameStatus.PENDING,
-    createdBy: 1,
-    reservationMinutes: 7,
-    createdAt: "2026-10-21T10:00:00.000Z",
-    updatedAt: "2026-10-21T10:00:00.000Z",
-  },
-  {
-    id: 3,
-    title: "Lucky Numbers",
-    totalNumbers: 40,
-    status: GameStatus.DRAWING,
-    createdBy: 1,
-    reservationMinutes: 5,
-    createdAt: "2026-10-18T12:00:00.000Z",
-    updatedAt: "2026-10-18T12:00:00.000Z",
-  },
-  {
-    id: 4,
-    title: "Friday Bingo",
-    totalNumbers: 25,
-    status: GameStatus.COMPLETED,
-    createdBy: 1,
-    reservationMinutes: 5,
-    createdAt: "2026-10-17T15:00:00.000Z",
-    updatedAt: "2026-10-17T15:00:00.000Z",
-  },
-];
+
 export default function GamesScreen() {
-  const [games, setGames] = useState<Game[]>(mockGames);
+  const [games, setGames] = useState<Game[]>([]);
   const [filter, setFilter] = useState<"ALL" | "ACTIVE" | "PENDING">("ALL");
   const [loading, setLoading] = useState(false);
-  const [usingDemo, setUsingDemo] = useState(true);
+
   const filtered = games.filter((g) => filter === "ALL" || g.status === filter);
+
   const refresh = async () => {
     setLoading(true);
     try {
@@ -64,39 +24,30 @@ export default function GamesScreen() {
         : Array.isArray((result as any)?.data)
           ? (result as any).data
           : [];
-      if (list.length) {
-        setGames(list);
-        setUsingDemo(false);
-      } else {
-        setGames(mockGames);
-        setUsingDemo(true);
-      }
+      setGames(list);
     } catch {
-      setGames(mockGames);
-      setUsingDemo(true);
+      setGames([]);
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     void refresh();
   }, []);
-  console.log("games", games)
+
   return (
-    <View className="flex-1 bg-slate-50 px-5 pt-4 dark:bg-slate-950">
-      <View className="mb-6 flex-row items-center">
+    <View className="flex-1 bg-slate-50 px-6 pt-12 dark:bg-slate-950">
+      <View className="mb-6 flex-row items-center justify-between">
         <Pressable
           onPress={() => router.back()}
-          className="mr-3 rounded-xl bg-white p-3 dark:bg-slate-900"
+          className="rounded-xl bg-white p-3 dark:bg-slate-900"
         >
-          <ArrowLeft size={22} color="#64748b" />
+          <ArrowLeft size={20} color="#64748b" />
         </Pressable>
-        <View className="flex-1">
-          <Text className="text-2xl font-bold text-slate-900 dark:text-white">
-            Bingo Games
-          </Text>
-          <Text className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Find a game and reserve one or more numbers.
+        <View className="flex-1 items-center">
+          <Text className="text-xl font-bold text-slate-900 dark:text-white">
+            Games
           </Text>
         </View>
         <Pressable
@@ -107,11 +58,6 @@ export default function GamesScreen() {
           <RefreshCw size={20} color={loading ? "#94a3b8" : "#64748b"} />
         </Pressable>
       </View>
-      {usingDemo ? (
-        <Text className="mb-3 rounded-xl bg-blue-50 p-3 text-xs text-blue-800 dark:bg-blue-950 dark:text-blue-200">
-          Showing sample games until the backend is available.
-        </Text>
-      ) : null}
       <View className="mb-5 flex-row gap-2">
         {fliterGames.map((x) => (
           <Pressable
