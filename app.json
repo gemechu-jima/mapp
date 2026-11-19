@@ -19,7 +19,7 @@
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/wangapay.jpg"
       },
-      "predictiveBackGestureEnabled": false,
+      "predictiveBackGestureEnabled": true,
       "package": "com.onetwo1.mobileapp"
     },
     "web": {
