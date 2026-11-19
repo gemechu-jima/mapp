@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "mobileapp",
-    "slug": "mobileapp",
+    "name": "Wangapay",
+    "slug": "wangapay",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mobileapp",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/images/icon.png",
+      "icon": "./assets/images/icon1.png",
       "bundleIdentifier": "com.onetwo1.mobileapp",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -17,14 +17,14 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/images/android-icon-foreground.png"
+        "foregroundImage": "./assets/images/wangapay.jpg"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.onetwo1.mobileapp"
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/wangapay1.jpg"
     },
     "plugins": [
       "expo-router",
@@ -32,7 +32,7 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#FFFFFF",
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/logo.jpg",
           "imageWidth": 120
         }
       ],
@@ -40,17 +40,21 @@
         "expo-build-properties",
         {
           "android": {
-            "buildArchs": ["armeabi-v7a", "arm64-v8a"],
+            "buildArchs": [
+              "armeabi-v7a",
+              "arm64-v8a"
+            ],
             "enableMinifyInReleaseBuilds": true,
             "enableBundleCompression": true,
             "enablePngCrunchInReleaseBuilds": true
           }
         }
-      ]
+      ],
+      "expo-font",
+      "expo-asset"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     },
     "extra": {
       "router": {},

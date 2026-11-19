@@ -1,7 +1,7 @@
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Platform, ScrollView, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, View } from 'react-native';
 
 import PublicHeader from '@/components/common/PublicHeader';
 import {
@@ -13,7 +13,7 @@ import { loginUser } from '@/services/auth.service';
 import { useAuth } from '../../context/AuthContext';
 
 export default function LoginScreen() {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const { t, i18n } = useTranslation();
   const { login } = useAuth();
@@ -26,16 +26,16 @@ export default function LoginScreen() {
       notify(t('auth.phoneNumber'));
       return;
     }
-
+ console.log(phoneNumber)
     setIsLoading(true);
 
     try {
       const response = await loginUser(phoneNumber.trim());
-
+      console.log(response)
       login(response.user, response.token);
 
       if (response.user.role === 'ADMIN') {
-        router.replace('/(admin)/dashboard');
+        router.replace('/admin/dashboard');
       } else {
         router.replace('/(player)/dashboard');
       }
@@ -60,7 +60,8 @@ export default function LoginScreen() {
       <PublicHeader />
 
       <Text className="mb-2 pb-4 text-center text-3xl font-bold capitalize text-slate-900 dark:text-white">
-        {t('auth.loginDescription')}
+        {/* {t('auth.loginDescription')} */}
+        login
       </Text>
 
       <Text className="mb-2 text-slate-900 dark:text-white">
@@ -80,12 +81,18 @@ export default function LoginScreen() {
         style={{ opacity: isLoading ? 0.6 : 1 }}
         className="rounded-xl bg-blue-600"
       >
-        <Text
-          onPress={isLoading ? undefined : handleLogin}
-          className="py-4 text-center font-bold text-white"
-        >
+      <Pressable
+       onPress={handleLogin}
+        disabled={isLoading}
+        style={({ pressed }) => ({
+          opacity: isLoading ? 0.6 : pressed ? 0.8 : 1,
+        })}
+        className="rounded-xl bg-blue-600 py-4"
+      >
+        <Text className="text-center font-bold text-white">
           {isLoading ? 'Logging in...' : t('auth.loginButton')}
         </Text>
+      </Pressable>
       </View>
 
       <View className="mt-6 flex-row items-center justify-center">

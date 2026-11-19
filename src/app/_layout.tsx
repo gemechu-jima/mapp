@@ -18,7 +18,7 @@ export default function RootLayout() {
             <Stack.Screen name="index" />
             <Stack.Screen name="auth" />
             <Stack.Screen name="(player)" />
-            <Stack.Screen name="(admin)" />
+            <Stack.Screen name="admin" />
           </Stack>
         </PreferencesProvider>
       </AuthProvider>

@@ -3,9 +3,9 @@ import { api } from './api';
 
 export async function loginUser(phoneNumber: string): Promise<AuthResponse> {
   const normalized = phoneNumber.trim();
-
+     console.log("normalizated",normalized)
   if (!normalized) {
-    throw new Error('Phone number is required');
+    throw new Error('Phone number is required h');
   }
 
   const response = await api.post<AuthResponse>('/users/login', {

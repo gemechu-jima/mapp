@@ -21,11 +21,17 @@ export const api = axios.create({
   timeout: 60000, // 60s timeout so Render free-tier cold starts don't fail
   headers: {
     Accept: 'application/json',
-    "Content-Type": "multipart/form-data",
+    "Content-Type": "application/json",
 
   },
 });
-
+export const uploadApi = axios.create({
+  baseURL: getBaseUrl(),
+  timeout: 60000, // 60s timeout so Render free-tier cold starts don't fail
+  headers: {
+    Accept: 'application/json',
+  },
+});
 /** Call this after login to attach the Bearer token to every subsequent request. */
 export function setAuthToken(token: string | null) {
   if (token) {

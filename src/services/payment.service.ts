@@ -2,6 +2,18 @@ import { api } from './api';
 import type { PaymentProof, SubmitPaymentProofDto, PaymentReviewDto } from '@/types/payment';
 
 export const PaymentService = {
+  async checkReference(reference: string, options?: { reservationId?: string; gameId?: string }): Promise<{
+    isUnique: boolean;
+    detectedProvider: string | null;
+    message: string;
+    isPendingForCurrent?: boolean;
+  }> {
+    const params = new URLSearchParams();
+    params.set('reference', reference);
+    if (options?.reservationId) params.set('reservationId', options.reservationId);
+    if (options?.gameId) params.set('gameId', options.gameId);
+    return (await api.get(`/payments/check-reference?${params.toString()}`)).data;
+  },
   async submitProof(data: SubmitPaymentProofDto): Promise<PaymentProof> {
     return (await api.post<PaymentProof>('/payments/proofs', data)).data;
   },

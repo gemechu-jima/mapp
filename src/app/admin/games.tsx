@@ -82,7 +82,6 @@ export default function AdminGames() {
     setSaving(true);
     try {
       const created = await GameService.create({
-        id: "",
         title: g.title,
         totalNumbers: g.totalNumbers,
         reservationMinutes: g.reservationMinutes,

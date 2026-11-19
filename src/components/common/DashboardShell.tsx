@@ -3,6 +3,7 @@ import PublicHeader from "@/components/common/PublicHeader";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 import PlayerSidebar from "@/components/layout/PlayerSidebar";
+import BottonNavigation from "./BottomNavigation";
 import { useAuth } from "@/context/AuthContext";
 import { PaymentService } from "@/services/payment.service";
 import { router } from "expo-router";
@@ -71,7 +72,7 @@ export default function DashboardShell({ role, children }: Props) {
             onPress={() =>
               router.push(
                 role === "admin"
-                  ? "/(admin)/notifications"
+                  ? "/admin/notifications"
                   : "/(player)/notifications",
               )
             }
@@ -94,6 +95,7 @@ export default function DashboardShell({ role, children }: Props) {
       ) : (
         <PlayerSidebar visible={menuOpen} onClose={() => setMenuOpen(false)} />
       )}
+      <BottonNavigation/>
     </View>
   );
 }

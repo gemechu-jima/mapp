@@ -1,3 +1,4 @@
+import AdvertisementDisplay from "@/components/common/AdvertisementDisplay";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import { useAuth } from "@/context/AuthContext";
 import GameCard from "@/features/games/GameCard";
@@ -7,7 +8,8 @@ import { GameStatus, type Game } from "@/types/game";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-
+import {banner} from "@/assets/banners/banner"
+import ComingSoonDisplay from "@/components/ComingSoonDisplay";
 export default function PlayerDashboard() {
   const { user } = useAuth();
   const [myReservationsCount, setMyReservationsCount] = useState<number | null>(null);
@@ -68,7 +70,7 @@ export default function PlayerDashboard() {
           Find a game and reserve your lucky numbers.
         </Text>
       </View>
-
+<AdvertisementDisplay ads={banner}/>
       {/* Stats */}
       <View className="mb-8 flex-row gap-3">
         <Pressable
@@ -84,7 +86,7 @@ export default function PlayerDashboard() {
           </Text>
         </Pressable>
         <Pressable
-          onPress={() => router.push("/(player)/results")}
+          onPress={() => router.push("/(player)/history")}
           className="flex-1 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
         >
           <Text className="text-2xl">🏆</Text>
@@ -165,14 +167,7 @@ export default function PlayerDashboard() {
       )}
 
       {/* Coming soon banner */}
-      <View className="mt-4 rounded-2xl bg-blue-50 p-4 dark:bg-blue-950">
-        <Text className="font-semibold text-blue-900 dark:text-blue-200">
-          Coming soon
-        </Text>
-        <Text className="mt-1 text-sm text-blue-800 dark:text-blue-300">
-          New Bingo games and announcements will appear here.
-        </Text>
-      </View>
+      <ComingSoonDisplay />
     </ScrollView>
   );
 }

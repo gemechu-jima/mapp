@@ -10,8 +10,8 @@ import { TranslatedTextInput as TextInput } from "@/components/common/Translated
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(user?.name || "Gemechu Jima");
-  const [phone, setPhone] = useState(user?.phone || "+251912345678");
+  const [name, setName] = useState(user?.name );
+  const [phone, setPhone] = useState(user?.phone );
   const [saved, setSaved] = useState(false);
   return (
     <Screen
@@ -21,7 +21,7 @@ export default function ProfileScreen() {
       <View className="items-center rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
         <View className="mb-3 h-20 w-20 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-950">
           <Text className="text-3xl font-bold text-blue-700 dark:text-blue-300">
-            {name.trim().charAt(0).toUpperCase() || "P"}
+            {name?.trim().charAt(0).toUpperCase() || "P"}
           </Text>
         </View>
         <Text className="text-xl font-bold text-slate-900 dark:text-white">

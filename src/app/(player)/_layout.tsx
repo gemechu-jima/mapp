@@ -1,7 +1,20 @@
-import { Stack } from 'expo-router';
+import { Redirect, Stack, Tabs } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
 import DashboardShell from '@/components/common/DashboardShell';
+import { useAuth } from '@/context/AuthContext';
 
 export default function PlayerLayout() {
+   const { user, isLoading } = useAuth();
+    if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+    if (!user) {
+    return <Redirect href="/auth/login" />;
+  }
   return (
     <DashboardShell role="player">
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
@@ -17,6 +30,7 @@ export default function PlayerLayout() {
         <Stack.Screen name="profile" />
         <Stack.Screen name="settings" />
       </Stack>
+
     </DashboardShell>
   );
 }

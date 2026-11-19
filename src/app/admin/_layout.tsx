@@ -1,7 +1,19 @@
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import DashboardShell from '@/components/common/DashboardShell';
-
+import { useAuth } from '@/context/AuthContext';
+import { ActivityIndicator, View } from 'react-native';
 export default function AdminLayout() {
+   const { user, isLoading } = useAuth();
+  if (isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+  if (!user || user.role !== 'ADMIN') {
+    return <Redirect href="/auth/login" />;
+  }
   return (
     <DashboardShell role="admin">
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
