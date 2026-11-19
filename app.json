@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Wangapay",
-    "slug": "wangapay",
+    "name": "mobileapp",
+    "slug": "mobileapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -58,8 +58,8 @@
     },
     "extra": {
       "router": {},
-      "eas": {
-        "projectId": "6794bf08-a4d5-4ebe-a39d-1aadecee1890"
+       "eas": {
+        "projectId": "baf0f608-a0fb-4697-bc24-8db5304c45d8"
       }
     }
   }
