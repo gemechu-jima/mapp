@@ -12,6 +12,7 @@ export default function RegisterScreen() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { i18n } = useTranslation();
   const notify = (message: string) => { const localized = translateUiText(message, i18n.language);
      if (Platform.OS === 'web') window.alert(localized)
@@ -23,33 +24,53 @@ export default function RegisterScreen() {
     notify('Please enter your first name.');
     return;
   }
-
-  if (!lastName.trim()) {
+      if (!lastName.trim()) {
     notify('Please enter your last name.');
     return;
   }
 
-  if (!phoneNumber.trim()) {
-    notify('Please enter your phone number.');
-    return;
-  }
+const cleanPhone = phoneNumber.trim();
+const validPhoneNumber = /^(?:0\d{9}|251\d{9})$/;
 
-  const validPhoneNumber = /^(?:\+251|0)9\d{8}$/;
+if (!validPhoneNumber.test(cleanPhone)) {
+  notify(
+    'Invalid phone number. Use 10 digits starting with 0 (e.g. 0912345678) or 12 digits starting with 251 (e.g. 251912345678).'
+  );
+  return;
+}
+  if (isLoading) return;
+  setIsLoading(true);
 
-  if (!validPhoneNumber.test(phoneNumber.trim())) {
-    notify('Enter a valid Ethiopian phone number.');
-    return;
-  }
+  try {
+    const response = await registerUser({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      phoneNumber: cleanPhone,
+    });
 
-  const response=await registerUser({firstName,lastName,phoneNumber})
-    if(response.success){
+    if (response.success) {
+      notify(
+        response?.message ||
+          'Registration successful. Please get your activation code from Admin to log in.'
+      );
       router.replace('/auth/login');
     }
-  console.log({
-    firstName: firstName.trim(),
-    lastName: lastName.trim(),
-    phoneNumber: phoneNumber.trim(),
-  });
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const backendMessage = error?.response?.data?.message;
+
+    if (status === 409) {
+      notify(
+        backendMessage ||
+          'This phone number is already registered. Please log in.'
+      );
+      router.replace('/auth/login');
+    } else {
+      notify(backendMessage || error?.message || 'Registration failed. Please try again.');
+    }
+  } finally {
+    setIsLoading(false);
+  }
   };
 
 

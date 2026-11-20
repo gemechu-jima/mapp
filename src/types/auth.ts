@@ -1,13 +1,14 @@
 
 
 export type AuthResponse={
-    token:string;
+    token:string,
     user:{
         id:string,
         name?:string,
         phone:string,
         role:"PLAYER" |"ADMIN",
     },
+    message:string,
     success:boolean
 }
 

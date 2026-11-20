@@ -41,7 +41,7 @@ export default function DashboardShell({ role, children }: Props) {
         paddingTop: insets.top,
         paddingBottom: insets.bottom,
       }}
-      className="flex-1 bg-slate-50 dark:bg-slate-950"
+      className="flex-1 bg-slate-50 dark:bg-slate-950 overflow-hidden border-2 rounded-xl border-green-500 border-spacing-7"
     >
       <View className="z-20 flex-row items-center justify-between border-b border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-950">
         <View className="flex-row items-center gap-2">

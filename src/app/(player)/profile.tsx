@@ -2,17 +2,67 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import { useAuth } from "@/context/AuthContext";
+import { UserService } from "@/services/user.service";
 import Screen from "@/components/ui/Screen";
 import AppButton from "@/components/ui/AppButton";
 import FeatureNotice from "@/features/shared/FeatureNotice";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import { TranslatedTextInput as TextInput } from "@/components/common/TranslatedText";
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, token, login, logout } = useAuth();
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(user?.name );
-  const [phone, setPhone] = useState(user?.phone );
+  const [name, setName] = useState(user?.name || "");
+  const [phone, setPhone] = useState(user?.phone || "");
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleSaveProfile = async () => {
+    const cleanName = (name || "").trim();
+    const cleanPhone = (phone || "").trim();
+
+    if (!cleanName) {
+      setErrorMsg("Full name is required.");
+      return;
+    }
+    // Require at least first name and last name (2 words)
+    const nameParts = cleanName.split(/\s+/);
+    if (nameParts.length < 2) {
+      setErrorMsg("Please enter both your first name and last name.");
+      return;
+    }
+    const validPhoneNumber = /^(?:0\d{9}|251\d{9})$/;
+    if (!validPhoneNumber.test(cleanPhone)) {
+      setErrorMsg(
+        "Enter a valid phone number (10 digits starting with 0, or 12 digits starting with 251).",
+      );
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setErrorMsg(null);
+
+      const res = await UserService.updateProfile({
+        name: cleanName,
+        phoneNumber: cleanPhone,
+      });
+
+      // Update AuthContext & persisted storage so changes remain after reload
+      if (res?.user) {
+        login(res.user, res.token || token || "");
+        setName(res.user.name);
+        setPhone(res.user.phone);
+      }
+
+      setEditing(false);
+      setSaved(true);
+    } catch (err: any) {
+      setErrorMsg(err?.response?.data?.message || "Failed to update profile.");
+    } finally {
+      setSaving(false);
+    }
+  };
   return (
     <Screen
       title="My profile"
@@ -62,16 +112,19 @@ export default function ProfileScreen() {
         {editing ? (
           <View className="gap-2">
             <AppButton
-              title="Save profile"
-              onPress={() => {
-                setEditing(false);
-                setSaved(true);
-              }}
+              title={saving ? "Saving..." : "Save profile"}
+              onPress={handleSaveProfile}
+              disabled={saving}
             />
             <AppButton
               title="Cancel editing"
               variant="secondary"
-              onPress={() => setEditing(false)}
+              onPress={() => {
+                setName(user?.name || "");
+                setPhone(user?.phone || "");
+                setErrorMsg(null);
+                setEditing(false);
+              }}
             />
           </View>
         ) : (
@@ -80,13 +133,18 @@ export default function ProfileScreen() {
             onPress={() => {
               setEditing(true);
               setSaved(false);
+              setErrorMsg(null);
             }}
           />
         )}
+        {errorMsg ? (
+          <Text className="mt-3 text-sm text-red-600 dark:text-red-400">
+            {errorMsg}
+          </Text>
+        ) : null}
         {saved ? (
           <Text className="mt-3 text-sm text-emerald-700 dark:text-emerald-300">
-            Changes saved in this screen session. Connect profile update API to
-            persist them.
+            Profile updated successfully.
           </Text>
         ) : null}
       </View>

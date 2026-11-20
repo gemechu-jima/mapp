@@ -8,12 +8,9 @@ export interface User {
   lastName?: string;
   phoneNumber:string,
   role: UserRole;
+  isActivated?: boolean;
+  activationCode?: string | null;
+  createdAt?: string;
   balance?: number;
 }
-export interface ManagedUser {
-  id: number;
-  displayName: string;
-  phoneMasked?: string;
-  role: 'PLAYER' | 'ADMIN' | 'SPECIAL';
-  status: 'ACTIVE' | 'BLOCKED';
-}
+
