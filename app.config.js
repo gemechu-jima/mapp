@@ -10,11 +10,11 @@ module.exports = ({ config }) => {
     owner: "onetwo1",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/wangapay.png",
+    icon: "./assets/images/wangapay.jpg",
     scheme: "mobileapp",
     userInterfaceStyle: "automatic",
     ios: {
-      icon: "./assets/images/wangapay.png",
+      icon: "./assets/images/wangapay.jpg",
       bundleIdentifier: "com.onetwo1.mobileapp",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
