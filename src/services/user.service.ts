@@ -19,4 +19,22 @@ export const UserService = {
   async revokeGamePermission(id: number): Promise<void> {
     await api.delete(`/users/game-permissions/${id}`);
   },
+async updateByAdmin(
+    userId: number | string,
+    data: { firstName: string; lastName: string; phoneNumber: string }
+  ) {
+    const response = await api.patch(`/users/${userId}`, data);
+    return response.data;
+  },
+
+  async deleteUser(userId: number | string) {
+    const response = await api.delete(`/users/${userId}`);
+    return response.data;
+  },
+async toggleActivation(userId: number | string, isActivated: boolean) {
+    const response = await api.patch(`/users/${userId}/activation`, {
+      isActivated,
+    });
+    return response.data;
+  },
 };

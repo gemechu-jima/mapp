@@ -2,7 +2,8 @@
 import { registerUser } from '@/services/auth.service';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, Pressable, View } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import { Alert, Platform, Pressable, View, ImageBackground, ScrollView } from 'react-native';
 import PublicHeader from '../../components/common/PublicHeader';
 import { useTranslation } from 'react-i18next';
 import { translateUiText } from '@/i18n/uiTranslations';
@@ -73,60 +74,111 @@ if (!validPhoneNumber.test(cleanPhone)) {
   }
   };
 
+return (
+    <ImageBackground
+      source={require('../../../assets/images/cover.png')}
+      resizeMode="cover"
+      blurRadius={14}
+      className="flex-1"
+    >
+      {/* Tint overlay so text & card always have crisp contrast */}
+      <View className="flex-1 bg-slate-950/60 dark:bg-slate-950/75">
+        <ScrollView
+          className="flex-1 px-6"
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'center',
+            paddingVertical: 32,
+          }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Centered Frosted Card */}
+          <View className="mx-auto w-full max-w-md rounded-3xl border border-white/20 bg-white/95 p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900/95">
+            <PublicHeader />
 
+            <Text className="mt-2 pb-1 text-center text-3xl font-bold text-slate-900 dark:text-white">
+              Create Account
+            </Text>
+            <Text className="mb-6 text-center text-xs text-slate-500 dark:text-slate-400">
+              Register to reserve your lucky numbers
+            </Text>
 
-  return (
-    <View className={`flex-1 bg-white px-6 pt-14 dark:bg-slate-950`}>
-      <PublicHeader />
-      <Text className="text-3xl font-bold text-slate-900 dark:text-white">
-        Create Account
-      </Text>
+            {/* First Name */}
+            <Text className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+              First Name
+            </Text>
+            <View className="mb-4 flex-row items-center rounded-xl border border-slate-300 bg-slate-50 px-3.5 dark:border-slate-700 dark:bg-slate-800">
+              <Ionicons name="person-outline" size={18} color="#64748B" />
+              <TextInput
+                value={firstName}
+                onChangeText={setFirstName}
+                placeholder="Enter your first name"
+                placeholderTextColor="#94A3B8"
+                autoCapitalize="words"
+                className="flex-1 px-3 py-3.5 text-slate-900 dark:text-white"
+              />
+            </View>
 
+            {/* Last Name */}
+            <Text className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+              Last Name
+            </Text>
+            <View className="mb-4 flex-row items-center rounded-xl border border-slate-300 bg-slate-50 px-3.5 dark:border-slate-700 dark:bg-slate-800">
+              <Ionicons name="person-outline" size={18} color="#64748B" />
+              <TextInput
+                value={lastName}
+                onChangeText={setLastName}
+                placeholder="Enter your last name"
+                placeholderTextColor="#94A3B8"
+                autoCapitalize="words"
+                className="flex-1 px-3 py-3.5 text-slate-900 dark:text-white"
+              />
+            </View>
 
+            {/* Phone Number */}
+            <Text className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+              Phone Number
+            </Text>
+            <View className="mb-6 flex-row items-center rounded-xl border border-slate-300 bg-slate-50 px-3.5 dark:border-slate-700 dark:bg-slate-800">
+              <Ionicons name="call-outline" size={18} color="#64748B" />
+              <TextInput
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
+                placeholder="Enter your phone number"
+                placeholderTextColor="#94A3B8"
+                keyboardType="phone-pad"
+                autoComplete="tel"
+                className="flex-1 px-3 py-3.5 text-slate-900 dark:text-white"
+              />
+            </View>
 
-      <Text className="text-slate-900 dark:text-white">First Name</Text>
-      <TextInput
-        value={firstName}
-        onChangeText={setFirstName}
-        placeholder="Enter your first name"
-        autoCapitalize="words"
-        className={`mb-5 rounded-xl border px-4 py-3 `}
+            <Pressable
+              onPress={handleRegister}
+              disabled={isLoading}
+              style={({ pressed }) => ({
+                opacity: isLoading ? 0.6 : pressed ? 0.85 : 1,
+              })}
+              className="rounded-xl bg-blue-600 py-4 shadow-md"
+            >
+              <Text className="text-center text-base font-bold text-white">
+                {isLoading ? 'Registering...' : 'Register'}
+              </Text>
+            </Pressable>
 
-      />
-
-      <Text className="text-slate-900 dark:text-white">Last Name</Text>
-      <TextInput
-        value={lastName}
-        onChangeText={setLastName}
-        placeholder="Enter your last name"
-        autoCapitalize="words"
-        className={`mb-5 rounded-xl border px-4 py-3 `}
-
-      />
-
-      <Text className="text-slate-900 dark:text-white">Phone Number</Text>
-      <TextInput
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-        placeholder="Enter your phone number"
-        keyboardType="phone-pad"
-        autoComplete="tel"
-        className={`mb-6 rounded-xl border px-4 py-3 `}
-      />
-
-      <Pressable
-        onPress={handleRegister}
-        className="items-center rounded-xl bg-blue-600 py-4"
-      >
-      <Text className="font-bold text-white">Register</Text>
-      </Pressable>
-
-      <View className="mt-6 flex-row justify-center">
-        <Text >Already have an account? </Text>
-        <Link href="/auth/login" className="font-semibold text-blue-500">
-          Login
-        </Link>
+            <View className="mt-6 flex-row items-center justify-center">
+              <Text className="text-sm text-slate-600 dark:text-slate-300">
+                Already have an account?{' '}
+              </Text>
+              <Link
+                href="/auth/login"
+                className="text-sm font-bold text-blue-600 dark:text-blue-400"
+              >
+                Login
+              </Link>
+            </View>
+          </View>
+        </ScrollView>
       </View>
-    </View>
+    </ImageBackground>
   );
 }

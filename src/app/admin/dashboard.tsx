@@ -1,9 +1,9 @@
-import { TranslatedText as Text } from '@/components/common/TranslatedText';
-import StatCard from '@/components/ui/StatCard';
-import { GameService } from '@/services/game.service';
-import { PaymentService } from '@/services/payment.service';
-import { ReservationService } from '@/services/reservation.service';
-import { router } from 'expo-router';
+import { TranslatedText as Text } from "@/components/common/TranslatedText";
+import StatCard from "@/components/ui/StatCard";
+import { GameService } from "@/services/game.service";
+import { PaymentService } from "@/services/payment.service";
+import { ReservationService } from "@/services/reservation.service";
+import { router } from "expo-router";
 import {
   ArrowRight,
   Bell,
@@ -15,44 +15,91 @@ import {
   Settings,
   Ticket,
   Users,
-} from 'lucide-react-native';
-import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+} from "lucide-react-native";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView, View } from "react-native";
 
 const actions = [
-  { title: 'Manage games', desc: 'Create games and configure prizes', icon: Gamepad2, path: '/(admin)/games' },
-  { title: 'Number inventory', desc: 'Check available, reserved and confirmed numbers', icon: Hash, path: '/(admin)/numbers' },
-  { title: 'Reservations', desc: 'Review pending and expired reservations', icon: Ticket, path: '/(admin)/reservations' },
-  { title: 'Payment verification', desc: 'Review payment screenshots and corrections', icon: CreditCard, path: '/(admin)/payments' },
-  { title: 'Draw management', desc: 'Trigger draws and review official results', icon: Dices, path: '/(admin)/draw' },
-  { title: 'Players & permissions', desc: 'Manage players and scoped access', icon: Users, path: '/(admin)/players' },
-  { title: 'Reports', desc: 'Game and financial summaries', icon: ChartNoAxesColumn, path: '/(admin)/reports' },
-  { title: 'Notifications', desc: 'Announcement templates and alerts', icon: Bell, path: '/(admin)/notifications' },
-  { title: 'Settings', desc: 'Configure platform defaults', icon: Settings, path: '/(admin)/settings' },
+  {
+    title: "Manage games",
+    desc: "Create games and configure prizes",
+    icon: Gamepad2,
+    path: "/admin/games",
+  },
+  {
+    title: "Number inventory",
+    desc: "Check available, reserved and confirmed numbers",
+    icon: Hash,
+    path: "/admin/numbers",
+  },
+  {
+    title: "Reservations",
+    desc: "Review pending and expired reservations",
+    icon: Ticket,
+    path: "/(admin)/reservations",
+  },
+  {
+    title: "Payment verification",
+    desc: "Review payment screenshots and corrections",
+    icon: CreditCard,
+    path: "/admin/payments",
+  },
+  {
+    title: "Draw management",
+    desc: "Trigger draws and review official results",
+    icon: Dices,
+    path: "/admin/draw",
+  },
+  {
+    title: "Players & permissions",
+    desc: "Manage players and scoped access",
+    icon: Users,
+    path: "/admin/players",
+  },
+  {
+    title: "Reports",
+    desc: "Game and financial summaries",
+    icon: ChartNoAxesColumn,
+    path: "/admin/reports",
+  },
+  {
+    title: "Notifications",
+    desc: "Announcement templates and alerts",
+    icon: Bell,
+    path: "/admin/notifications",
+  },
+  {
+    title: "Settings",
+    desc: "Configure platform defaults",
+    icon: Settings,
+    path: "/admin/settings",
+  },
 ];
 
 export default function AdminDashboard() {
-  const [gameCount, setGameCount] = useState<string | number>('—');
-  const [reservationCount, setReservationCount] = useState<string | number>('—');
-  const [pendingPayments, setPendingPayments] = useState<string | number>('—');
+  const [gameCount, setGameCount] = useState<string | number>("—");
+  const [reservationCount, setReservationCount] = useState<string | number>(
+    "—",
+  );
+  const [pendingPayments, setPendingPayments] = useState<string | number>("—");
 
   useEffect(() => {
     GameService.getAll()
       .then((list) => setGameCount(list.length))
-      .catch(() => { });
+      .catch(() => {});
 
     ReservationService.getAll()
       .then((list) => setReservationCount(list.length))
-      .catch(() => { });
+      .catch(() => {});
 
     PaymentService.getAll()
       .then((list) => {
         const pending = list.filter(
-          (p) => p.status === 'SUBMITTED' || p.status === 'UNDER_REVIEW',
+          (p) => p.status === "SUBMITTED" || p.status === "UNDER_REVIEW",
         ).length;
         setPendingPayments(pending);
       })
-      .catch(() => { });
+      .catch(() => {});
   }, []);
 
   return (
@@ -61,7 +108,9 @@ export default function AdminDashboard() {
       contentContainerStyle={{ padding: 20, paddingTop: 20, paddingBottom: 40 }}
     >
       <View className="mb-6">
-        <Text className="text-sm text-slate-500 dark:text-slate-400">Management overview</Text>
+        <Text className="text-sm text-slate-500 dark:text-slate-400">
+          Management overview
+        </Text>
         <Text className="mt-1 text-3xl font-bold text-slate-900 dark:text-white">
           Admin dashboard 👋
         </Text>
@@ -76,7 +125,9 @@ export default function AdminDashboard() {
         <StatCard label="Pending payments" value={pendingPayments} icon="💳" />
       </View>
 
-      <Text className="mb-3 text-xl font-bold text-slate-900 dark:text-white">All features</Text>
+      <Text className="mb-3 text-xl font-bold text-slate-900 dark:text-white">
+        All features
+      </Text>
       {actions.map((action) => {
         const Icon = action.icon;
         return (
@@ -89,8 +140,12 @@ export default function AdminDashboard() {
               <Icon size={22} color="#2563eb" />
             </View>
             <View className="flex-1">
-              <Text className="font-bold text-slate-900 dark:text-white">{action.title}</Text>
-              <Text className="mt-1 text-sm text-slate-500 dark:text-slate-400">{action.desc}</Text>
+              <Text className="font-bold text-slate-900 dark:text-white">
+                {action.title}
+              </Text>
+              <Text className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                {action.desc}
+              </Text>
             </View>
             <ArrowRight size={19} color="#94a3b8" />
           </Pressable>

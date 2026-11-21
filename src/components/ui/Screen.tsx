@@ -8,7 +8,7 @@ export default function Screen({
   title,
   subtitle,
   children,
-  back = true,
+  back = false,
 }: {
   title: string;
   subtitle?: string;

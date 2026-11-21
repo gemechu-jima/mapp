@@ -36,7 +36,9 @@ export const uploadApi = axios.create({
 export function setAuthToken(token: string | null) {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    uploadApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   } else {
     delete api.defaults.headers.common['Authorization'];
+    delete uploadApi.defaults.headers.common['Authorization'];
   }
 }

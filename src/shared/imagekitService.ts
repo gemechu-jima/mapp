@@ -4,7 +4,24 @@ import { Platform } from 'react-native';
 
 const URL_ENDPOINT = 'https://ik.imagekit.io/i7gyw6gaf';
 const PUBLIC_KEY = 'public_WG6NXRkDOBdycW3hepDkl6giae0=';
-const AUTH_ENDPOINT = 'http://10.34.30.153:3000/api/imagekit-auth';
+
+function getImageKitAuthEndpoint(): string {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL?.trim();
+  if (envUrl) {
+    const root = envUrl.replace(/\/api\/v1\/?$/, '').replace(/\/api\/?$/, '').replace(/\/$/, '');
+    return `${root}/api/imagekit-auth`;
+  }
+
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    return `http://${window.location.hostname}:3000/api/imagekit-auth`;
+  }
+
+  if (__DEV__) {
+    return 'http://localhost:3000/api/imagekit-auth';
+  }
+
+  return 'https://bbackend-f1hk.onrender.com/api/imagekit-auth';
+}
 
 const imagekit = new ImageKit({
   urlEndpoint: URL_ENDPOINT,
@@ -33,10 +50,11 @@ export async function uploadToImageKit(
   asset: RNFileAsset,
   options: UploadOptions = {}
 ): Promise<UploadResult> {
-  // 1. Fetch fresh auth parameters from your backend
-  const authRes = await fetch(AUTH_ENDPOINT);
+  // 1. Fetch fresh auth parameters from backend
+  const authEndpoint = getImageKitAuthEndpoint();
+  const authRes = await fetch(authEndpoint);
   if (!authRes.ok) {
-    throw new Error(`Auth request failed with status ${authRes.status}`);
+    throw new Error(`ImageKit auth failed with status ${authRes.status}`);
   }
   const auth = await authRes.json();
 

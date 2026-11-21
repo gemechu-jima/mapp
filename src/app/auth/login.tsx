@@ -7,9 +7,10 @@ import {
   Pressable,
   ScrollView,
   View,
+  ImageBackground,
   TextInput as RNTextInput,
 } from "react-native";
-
+import { Ionicons } from "@expo/vector-icons";
 import PublicHeader from "@/components/common/PublicHeader";
 import {
   TranslatedText as Text,
@@ -100,83 +101,111 @@ export default function LoginScreen() {
     }
   }
 
-  return (
-    <ScrollView
-      className="flex-1 bg-white px-6 pt-8 dark:bg-slate-950"
-      contentContainerStyle={{ paddingBottom: 40 }}
-      keyboardShouldPersistTaps="handled"
+    return (
+    <ImageBackground
+      source={require("../../../assets/images/cover.png")}
+      resizeMode="cover"
+      blurRadius={14}
+      className="flex-1"
     >
-      <PublicHeader />
-
-      <Text className="mb-2 pb-4 text-center text-3xl font-bold capitalize text-slate-900 dark:text-white">
-        login
-      </Text>
-
-      {/* Phone Number Field */}
-      <Text className="mb-2 text-slate-900 dark:text-white">
-        {t("auth.phoneNumber")}
-      </Text>
-
-      <TextInput
-        value={phoneNumber}
-        onChangeText={handlePhoneChange}
-        placeholder={t("auth.phoneNumber")}
-        keyboardType="phone-pad"
-        autoComplete="tel"
-        className="mb-4 rounded-xl border border-slate-300 px-4 py-3 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-      />
-
-      {/* Activation Code Field — Only toggled on when backend reports user is pending activation */}
-      {requiresActivation && (
-        <View className="mb-4 rounded-xl border border-amber-300 bg-amber-50/70 p-4 dark:border-amber-800 dark:bg-amber-950/30">
-          <Text className="mb-1 text-sm font-semibold text-amber-800 dark:text-amber-300">
-            Account Activation Required (First Login)
-          </Text>
-          <Text className="mb-3 text-xs text-amber-700 dark:text-amber-400">
-            Enter the 6-digit activation code given to you by Admin. Next time
-            you will log in with your phone number only.
-          </Text>
-
-          <RNTextInput
-            value={activationCode}
-            onChangeText={setActivationCode}
-            placeholder="Enter 6-digit activation code"
-            keyboardType="number-pad"
-            maxLength={6}
-            className="rounded-xl border border-amber-400 bg-white px-4 py-3 text-center text-lg font-bold tracking-widest text-slate-900 dark:border-amber-700 dark:bg-slate-900 dark:text-white"
-          />
-        </View>
-      )}
-
-      <Pressable
-        onPress={handleLogin}
-        disabled={isLoading}
-        style={({ pressed }) => ({
-          opacity: isLoading ? 0.6 : pressed ? 0.8 : 1,
-        })}
-        className="rounded-xl bg-blue-600 py-4"
-      >
-        <Text className="text-center font-bold text-white">
-          {isLoading
-            ? "Logging in..."
-            : requiresActivation
-              ? "Activate & Login"
-              : t("auth.loginButton")}
-        </Text>
-      </Pressable>
-
-      <View className="mt-6 flex-row items-center justify-center">
-        <Text className="text-slate-700 dark:text-slate-300">
-          {t("auth.noAccount")}{" "}
-        </Text>
-
-        <Link
-          href="/auth/register"
-          className="font-semibold text-blue-600 dark:text-blue-400"
+      {/* Dark/Light tint overlay so text & card always have crisp contrast */}
+      <View className="flex-1 bg-slate-950/60 dark:bg-slate-950/75">
+        <ScrollView
+          className="flex-1 px-6"
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            paddingVertical: 32,
+          }}
+          keyboardShouldPersistTaps="handled"
         >
-          {t("auth.createAccount")}
-        </Link>
+          {/* Centered Glass/Elevated Login Card */}
+          <View className="mx-auto w-full max-w-md rounded-3xl border border-white/20 bg-white/95 p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900/95">
+            <PublicHeader />
+
+            <Text className="mt-2 pb-1 text-center text-3xl font-bold capitalize text-slate-900 dark:text-white">
+              login
+            </Text>
+            <Text className="mb-6 text-center text-xs text-slate-500 dark:text-slate-400">
+              Sign in with your registered phone number
+            </Text>
+
+            {/* Phone Number Field */}
+            <Text className="mb-2 text-sm font-semibold text-slate-800 dark:text-slate-200">
+              {t("auth.phoneNumber")}
+            </Text>
+
+            <View className="mb-4 flex-row items-center rounded-xl border border-slate-300 bg-slate-50 px-3.5 dark:border-slate-700 dark:bg-slate-800">
+              <Ionicons name="call-outline" size={18} color="#64748B" />
+              <TextInput
+                value={phoneNumber}
+                onChangeText={handlePhoneChange}
+                placeholder={t("auth.phoneNumber")}
+                placeholderTextColor="#94A3B8"
+                keyboardType="phone-pad"
+                autoComplete="tel"
+                className="flex-1 px-3 py-3.5 text-slate-900 dark:text-white"
+              />
+            </View>
+
+            {/* Activation Code Field — Only toggled on when backend reports user is pending activation */}
+            {requiresActivation && (
+              <View className="mb-4 rounded-2xl border border-amber-300 bg-amber-50/90 p-4 dark:border-amber-800 dark:bg-amber-950/50">
+                <View className="mb-1 flex-row items-center gap-1.5">
+                  <Ionicons name="key-outline" size={16} color="#D97706" />
+                  <Text className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                    Account Activation Required (First Login)
+                  </Text>
+                </View>
+                <Text className="mb-3 text-xs text-amber-700 dark:text-amber-400">
+                  Enter the 6-digit activation code given to you by Admin. Next
+                  time you will log in with your phone number only.
+                </Text>
+
+                <RNTextInput
+                  value={activationCode}
+                  onChangeText={setActivationCode}
+                  placeholder="Enter 6-digit activation code"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  className="rounded-xl border border-amber-400 bg-white px-4 py-3 text-center text-lg font-bold tracking-widest text-slate-900 dark:border-amber-700 dark:bg-slate-950 dark:text-white"
+                />
+              </View>
+            )}
+
+            <Pressable
+              onPress={handleLogin}
+              disabled={isLoading}
+              style={({ pressed }) => ({
+                opacity: isLoading ? 0.6 : pressed ? 0.85 : 1,
+              })}
+              className="mt-1 rounded-xl bg-blue-600 py-4 shadow-md"
+            >
+              <Text className="text-center text-base font-bold text-white">
+                {isLoading
+                  ? "Logging in..."
+                  : requiresActivation
+                    ? "Activate & Login"
+                    : t("auth.loginButton")}
+              </Text>
+            </Pressable>
+
+            <View className="mt-6 flex-row items-center justify-center">
+              <Text className="text-sm text-slate-600 dark:text-slate-300">
+                {t("auth.noAccount")}{" "}
+              </Text>
+
+              <Link
+                href="/auth/register"
+                className="text-sm font-bold text-blue-600 dark:text-blue-400"
+              >
+                {t("auth.createAccount")}
+              </Link>
+            </View>
+          </View>
+        </ScrollView>
       </View>
-    </ScrollView>
-  );
+    </ImageBackground>
+  )
 }

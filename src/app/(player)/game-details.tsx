@@ -37,16 +37,26 @@ export default function GameDetailsScreen() {
             : [];
         if (active) {
           setNumbers(
-            list.map((n: any) => ({
-              id: n.id,
-              number: n.number,
-              status: n.status,
-            })),
+            list.map((n: any) => {
+              const isExpired =
+                n.status === "RESERVED" &&
+                n.reservedUntil &&
+                new Date(n.reservedUntil).getTime() < Date.now();
+
+              return {
+                id: n.id,
+                number: n.number,
+                status: isExpired ? "AVAILABLE" : n.status,
+                reservedBy: n.reservedBy ?? null,
+              };
+            }),
           );
         }
       })
       .catch(() => {})
-      .finally(() => { if (active) setLoading(false); });
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
@@ -117,7 +127,9 @@ export default function GameDetailsScreen() {
       );
 
       // Pass the number IDs to the payment screen.
-      const selectedNumberValues = selectedNumbers.map((n) => n.number).join(",");
+      const selectedNumberValues = selectedNumbers
+        .map((n) => n.number)
+        .join(",");
       router.push({
         pathname: "/(player)/payments",
         params: {
@@ -233,9 +245,11 @@ export default function GameDetailsScreen() {
             </View>
           ))}
         </View>
+
         <NumberGrid
           numbers={numbers}
           selected={selected}
+          currentUserId={user?.id}
           onToggle={(id) =>
             setSelected((v) =>
               v.includes(id) ? v.filter((x) => x !== id) : [...v, id],
