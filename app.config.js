@@ -7,6 +7,7 @@ module.exports = ({ config }) => {
     ...config,
     name: "wangapay",
     slug: "wangapay",
+    owner: "onetwo1",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/wangapay.png",
