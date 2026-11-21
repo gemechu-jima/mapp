@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: EAS Android Preview Build
+    name: EAS Android Preview Builds
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -28,7 +28,12 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: npx --yes eas-cli@latest init --account onetwo1 --non-interactive --force
 
-      - name: Trigger EAS Android Build
+      - name: Trigger Modern Android APK Build (64-bit)
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx --yes eas-cli@latest build --platform android --profile preview --non-interactive --no-wait
+        run: npx --yes eas-cli@latest build --platform android --profile preview-modern --non-interactive --no-wait
+
+      - name: Trigger Legacy Android APK Build (32-bit Old Phones)
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx --yes eas-cli@latest build --platform android --profile preview-legacy --non-interactive --no-wait
