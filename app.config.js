@@ -23,7 +23,7 @@ module.exports = ({ config }) => {
     android: {
       adaptiveIcon: {
         backgroundColor: "#FFFFFF",
-        foregroundImage: "./assets/images/logo.png",
+        foregroundImage: "./assets/images/logo.jpg",
       },
       predictiveBackGestureEnabled: true,
       package: "com.onetwo1.mobileapp",
