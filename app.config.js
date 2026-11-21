@@ -30,7 +30,7 @@ module.exports = ({ config }) => {
     },
     web: {
       output: "static",
-      favicon: "./assets/images/wangapay1.png",
+      favicon: "./assets/images/wangapay.jpg",
     },
     plugins: [
       "expo-router",
@@ -38,7 +38,7 @@ module.exports = ({ config }) => {
         "expo-splash-screen",
         {
           backgroundColor: "#FFFFFF",
-          image: "./assets/images/wangapay.png",
+          image: "./assets/images/wangapay.jpg",
           imageWidth: 120,
         },
       ],
