@@ -6,7 +6,7 @@ module.exports = ({ config }) => {
   return {
     ...config,
     name: "wangapay",
-    slug: "wangapay",
+    slug: "mobileapp",
     owner: "onetwo1",
     version: "1.0.0",
     orientation: "portrait",
