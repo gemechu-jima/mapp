@@ -17,7 +17,7 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
-        "foregroundImage": "./assets/images/wangapay.jpg"
+        "foregroundImage": "./assets/images/logo.jpg"
       },
       "predictiveBackGestureEnabled": true,
       "package": "com.onetwo1.mobileapp"
@@ -32,7 +32,7 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#FFFFFF",
-          "image": "./assets/images/logo.jpg",
+          "image": "./assets/images/wangapay.jpg",
           "imageWidth": 120
         }
       ],
