@@ -48,7 +48,7 @@ export default function NumberGrid({
             }`}
           >
             <Text
-              className={`font-bold h-16 w-16 -p-2 rounded-full flex justify-center items-center text-xl ${
+              className={`font-bold p-2 rounded-full flex justify-center items-center text-xl ${
                 active
                   ? "text-white"
                   : isAvailable

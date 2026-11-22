@@ -175,7 +175,7 @@ export default function AdminPlayers() {
       subtitle="Manage player accounts and share activation codes via the three-dot menu."
     >
       {/* Summary Stats */}
-<View className="mb-4 flex-row gap-3">
+    <View className="mb-4 flex-row gap-3">
         <View className="flex-1">
           <StatCard
             label="Total Players"

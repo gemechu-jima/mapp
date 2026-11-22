@@ -16,7 +16,7 @@ type SidebarMenuProps = {
 
 export default function SidebarMenu({ items }: SidebarMenuProps) {
   return (
-    <View className="gap-2">
+    <View className="gap-2 ">
       {items.map((item) => {
         const Icon = item.icon;
 
@@ -30,6 +30,7 @@ export default function SidebarMenu({ items }: SidebarMenuProps) {
                 : 'bg-transparent'
             }`}
           >
+            
             <Icon
               size={22}
               color={item.active ? '#2563eb' : '#64748b'}

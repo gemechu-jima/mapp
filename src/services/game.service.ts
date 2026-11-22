@@ -25,11 +25,16 @@ export const GameService = {
   async cancel(id: number): Promise<Game> {
     return (await api.patch<Game>(`/games/${id}/cancel`)).data;
   },
-
+  async pending(id: number): Promise<Game> {
+    return (await api.patch<Game>(`/games/${id}/pending`)).data;
+  },
+  async drawing(id: number): Promise<Game> {
+    return (await api.patch<Game>(`/games/${id}/drawing`)).data;
+  },
   async deleteGame(id: number): Promise<void> {
     await api.delete(`/games/${id}`);
   },
-async updateStatus(id: number | string, status: GameStatus): Promise<Game> {
+  async updateStatus(id: number | string, status: GameStatus): Promise<Game> {
     const numericId = Number(id);
 
     switch (status) {
@@ -39,6 +44,10 @@ async updateStatus(id: number | string, status: GameStatus): Promise<Game> {
         return this.closeGame(numericId);
       case GameStatus.CANCELLED:
         return this.cancel(numericId);
+      case GameStatus.PENDING:
+        return this.pending(numericId);
+      case GameStatus.DRAWING:
+        return this.drawing(numericId);
       default:
         throw new Error(`Unsupported status transition: ${status}`);
     }

@@ -1,8 +1,10 @@
 import AppButton from "@/components/ui/AppButton";
+import StatCard from "@/components/ui/StatCard";
 import FeatureNotice from "@/features/shared/FeatureNotice";
 import ManagementList, { type RecordItem } from "@/features/shared/ManagementList";
 import { ReservationService } from "@/services/reservation.service";
 import type { ReservationResponse } from "@/types/reservation";
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { Alert, Platform, View } from "react-native";
 
@@ -54,23 +56,7 @@ export default function AdminReservations() {
       title="Reservation management"
       subtitle="Review pending reservations, expiry, cancellations and confirmed numbers."
       records={filtered}
-      stats={[
-        {
-          label: "Pending",
-          value: records.filter((r) => r.status === "PENDING").length,
-          icon: "⏳",
-        },
-        {
-          label: "Confirmed",
-          value: records.filter((r) => r.status === "CONFIRMED").length,
-          icon: "✅",
-        },
-        {
-          label: "Expired",
-          value: records.filter((r) => r.status === "EXPIRED").length,
-          icon: "⌛",
-        },
-      ]}
+      stats={[]}
       actionLabel="Refresh"
       onAction={load}
       onSelect={(r) => {
@@ -78,6 +64,23 @@ export default function AdminReservations() {
         else Alert.alert(r.title, `${r.subtitle}\n${r.detail}`);
       }}
     >
+      <View className="mb-6 flex-row flex-wrap gap-3">
+  <StatCard
+    label="Pending"
+    value={records.filter((r) => r.status === "PENDING").length}
+    icon={<Ionicons name="color-wand-outline" size={18} color="#2563EB" />}
+  />
+  <StatCard
+    label="Confirmed"
+    value={records.filter((r) => r.status === "CONFIRMED").length}
+    icon={<Ionicons name="checkmark-circle-sharp" size={18} color="#2563EB" />}
+  />
+  <StatCard
+    label="Expired"
+    value={records.filter((r) => r.status === "EXPIRED").length}
+    icon={<Ionicons name="close-circle-outline" size={18} color="#2563EB" />}
+  />
+</View>
       {/* Status filter pills */}
       <View className="mb-4 flex-row flex-wrap gap-2">
         {["ALL", "PENDING", "CONFIRMED", "EXPIRED", "CANCELLED"].map((s) => (

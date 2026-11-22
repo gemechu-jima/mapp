@@ -53,7 +53,7 @@ export default function GameDetailsScreen() {
           );
         }
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => {
         if (active) setLoading(false);
       });
@@ -145,7 +145,7 @@ export default function GameDetailsScreen() {
       Alert.alert(
         "Reservation failed",
         error?.response?.data?.message ??
-          "Could not reserve the selected numbers. Please try again.",
+        "Could not reserve the selected numbers. Please try again.",
       );
 
       // Refresh from the backend to get the latest number statuses.
@@ -261,8 +261,8 @@ export default function GameDetailsScreen() {
             Selected numbers:{" "}
             {selected.length
               ? selected
-                  .map((id) => numbers.find((n) => n.id === id)?.number)
-                  .join(", ")
+                .map((id) => numbers.find((n) => n.id === id)?.number)
+                .join(", ")
               : "None"}
           </Text>
           <Text className="mt-1 text-sm text-slate-500 dark:text-slate-400">

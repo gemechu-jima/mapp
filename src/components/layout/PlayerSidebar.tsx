@@ -1,4 +1,5 @@
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { router, usePathname } from "expo-router";
 import {
@@ -54,24 +55,7 @@ export default function PlayerSidebar({ visible, onClose }: Props) {
       active: path.endsWith("/payments"),
       onPress: () => go("/(player)/payments"),
     },
-    {
-      label: "Draw Results",
-      icon: Trophy,
-      active: path.endsWith("/results"),
-      onPress: () => go("/(player)/results"),
-    },
-    {
-      label: "Notifications",
-      icon: Bell,
-      active: path.endsWith("/notifications"),
-      onPress: () => go("/(player)/notifications"),
-    },
-    {
-      label: "My Profile",
-      icon: UserRound,
-      active: path.endsWith("/profile"),
-      onPress: () => go("/(player)/profile"),
-    },
+
     {
       label: "Settings",
       icon: Settings,
@@ -82,40 +66,58 @@ export default function PlayerSidebar({ visible, onClose }: Props) {
 
   return (
     <View className="absolute inset-0 z-50 flex-row">
-      <Pressable onPress={onClose} className="absolute inset-0 bg-black/50" />
-      <View className="h-full w-80 border-r border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
-        <View className="mb-5 flex-row items-center justify-between">
-          <View>
-            <Text className="text-xl font-bold text-slate-900 dark:text-white">
-              Bingo
-            </Text>
-            <Text className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Player workspace
-            </Text>
-          </View>
-          <Pressable
-            onPress={onClose}
-            className="rounded-lg bg-slate-100 p-2 dark:bg-slate-800"
-          >
-            <X size={20} color="#64748b" />
-          </Pressable>
+  {/* Backdrop */}
+  <Pressable onPress={onClose} className="absolute inset-0 bg-black/50" />
+
+  {/* Drawer Panel (SafeAreaView prevents sliding up under the status bar) */}
+  <SafeAreaView
+    edges={["top", "bottom"]}
+    className="h-full w-80 max-w-[82%] border-r border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"
+  >
+    <View className="flex-1 px-5 py-4">
+      {/* 1. Pinned Top Header */}
+      <View className="mb-5 flex-row items-center justify-between">
+        <View>
+          <Text className="text-xl font-bold text-slate-900 dark:text-white">
+            Bingo
+          </Text>
+          <Text className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Player workspace
+          </Text>
         </View>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <SidebarMenu items={items} />
-          {/* Logout */}
-          <Pressable
-            onPress={() => {
-              onClose();
-              logout();
-              router.replace("/auth/login");
-            }}
-            className="mt-4 flex-row items-center gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-700"
-          >
-            <LogOut size={18} color="#ef4444" />
-            <Text className="font-semibold text-red-500">Log out</Text>
-          </Pressable>
-        </ScrollView>
+        <Pressable
+          onPress={onClose}
+          className="rounded-lg bg-slate-100 p-2 dark:bg-slate-800"
+        >
+          <X size={20} color="#64748b" />
+        </Pressable>
+      </View>
+
+      {/* 2. Scrollable Menu Area (flex-1 expands to fill empty space even with few items) */}
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="pb-4"
+        showsVerticalScrollIndicator={false}
+      >
+        <SidebarMenu items={items} />
+      </ScrollView>
+
+      {/* 3. Pinned Bottom Footer (stays at the bottom whether you have 2 items or 20) */}
+      <View className="border-t border-slate-100 pt-3 dark:border-slate-800">
+        <Pressable
+          onPress={() => {
+            onClose();
+            logout();
+            router.replace("/auth/login");
+          }}
+          className="flex-row items-center gap-3 rounded-xl border border-slate-200 p-3 active:bg-red-50 dark:border-slate-700 dark:active:bg-red-950/30"
+        >
+          <LogOut size={18} color="#ef4444" />
+          <Text className="font-semibold text-red-500">Log out</Text>
+        </Pressable>
       </View>
     </View>
+  </SafeAreaView>
+</View>
   );
 }

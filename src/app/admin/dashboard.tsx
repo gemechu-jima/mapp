@@ -3,6 +3,9 @@ import StatCard from "@/components/ui/StatCard";
 import { GameService } from "@/services/game.service";
 import { PaymentService } from "@/services/payment.service";
 import { ReservationService } from "@/services/reservation.service";
+import { UserService } from "@/services/user.service";
+import { User } from "@/types/user";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import {
   ArrowRight,
@@ -78,11 +81,10 @@ const actions = [
 
 export default function AdminDashboard() {
   const [gameCount, setGameCount] = useState<string | number>("—");
-  const [reservationCount, setReservationCount] = useState<string | number>(
-    "—",
-  );
+  const [reservationCount, setReservationCount] = useState<string | number>("—",);
   const [pendingPayments, setPendingPayments] = useState<string | number>("—");
-
+  const [usersCount, setUsersCount] = useState<string | number>("");
+  
   useEffect(() => {
     GameService.getAll()
       .then((list) => setGameCount(list.length))
@@ -91,7 +93,9 @@ export default function AdminDashboard() {
     ReservationService.getAll()
       .then((list) => setReservationCount(list.length))
       .catch(() => {});
-
+    UserService.list()
+    .then((list)=>setUsersCount(list.length))
+    .catch(()=>{})
     PaymentService.getAll()
       .then((list) => {
         const pending = list.filter(
@@ -114,15 +118,14 @@ export default function AdminDashboard() {
         <Text className="mt-1 text-3xl font-bold text-slate-900 dark:text-white">
           Admin dashboard 👋
         </Text>
-        <Text className="mt-2 leading-5 text-slate-500 dark:text-slate-400">
-          Manage the complete Bingo lifecycle from one place.
-        </Text>
       </View>
 
       <View className="mb-6 flex-row flex-wrap gap-3">
-        <StatCard label="Games" value={gameCount} icon="🎱" />
-        <StatCard label="Reservations" value={reservationCount} icon="🎟️" />
-        <StatCard label="Pending payments" value={pendingPayments} icon="💳" />
+        <StatCard label="Games" value={gameCount} icon={<Ionicons name="game-controller-sharp" size={18} color="#2563EB" />} />
+        <StatCard label="Reservations" value={reservationCount} icon={<Ionicons name="hand-left-outline" size={18} color="#25eb60ff" />} />
+        <StatCard label="Pending payments" value={pendingPayments} icon={<Ionicons name="cash-outline" size={18} color="#b4187bff" />}  />
+        <StatCard label="Users" value={usersCount} icon={<Ionicons name="person-add-outline" size={18} color="#45ec53ff" />}  />
+
       </View>
 
       <Text className="mb-3 text-xl font-bold text-slate-900 dark:text-white">

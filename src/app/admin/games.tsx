@@ -1,9 +1,11 @@
+import StatCard from "@/components/ui/StatCard";
 import { useAuth } from "@/context/AuthContext";
 import GameAdminForm from "@/features/games/GameAdminForm";
 import FeatureNotice from "@/features/shared/FeatureNotice";
 import ManagementList, { type RecordItem } from "@/features/shared/ManagementList";
 import { GameService } from "@/services/game.service";
 import { GameStatus, type Game } from "@/types/game";
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,6 +13,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   Text,
   View,
 } from "react-native";
@@ -147,24 +150,45 @@ export default function AdminGames() {
   };
 
   return (
-    <>
+    <ScrollView>
+  <View className="flex-row flex-wrap gap-3 m-4">
+  <View className="min-w-[46%] flex-1">
+    <StatCard
+      label="Total Game"
+      value={records.length}
+      icon={<Ionicons name="game-controller-sharp" size={18} color="#2563EB" />}
+    />
+  </View>
+
+  <View className="min-w-[46%] flex-1">
+    <StatCard
+      label="Active"
+      value={records.filter((r) => r.status === GameStatus.ACTIVE).length}
+      icon={<Ionicons name="checkmark-circle-outline" size={18} color="#16A34A" />}
+    />
+  </View>
+
+  <View className="min-w-[46%] flex-1">
+    <StatCard
+      label="Completed"
+      value={records.filter((r) => r.status === GameStatus.COMPLETED).length}
+      icon={<Ionicons name="finger-print" size={18} color="#09f684ff" />}
+    />
+  </View>
+    <View className="min-w-[46%] flex-1">
+    <StatCard
+      label="Pending"
+      value={records.filter((r) => r.status === GameStatus.PENDING).length}
+      icon={<Ionicons name="paper-plane" size={18} color="#D97706" />}
+    />
+  </View>
+
+</View>
+    
       <ManagementList
         title="Manage games"
         subtitle="Create games and configure numbers, reservation expiry, winners and prizes."
         records={records}
-        stats={[
-          { label: "Total games", value: records.length, icon: "🎱" },
-          {
-            label: "Active",
-            value: records.filter((r) => r.status === GameStatus.ACTIVE).length,
-            icon: "🟢",
-          },
-          {
-            label: "Completed",
-            value: records.filter((r) => r.status === GameStatus.COMPLETED).length,
-            icon: "🏁",
-          },
-        ]}
         actionLabel={form ? "Close form" : "Create game"}
         onAction={() => setForm((v) => !v)}
         onSelect={handleAction}
@@ -251,6 +275,6 @@ export default function AdminGames() {
           </View>
         </View>
       </Modal>
-    </>
+    </ScrollView>
   );
 }

@@ -1,34 +1,91 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router, usePathname } from "expo-router";
+import { Href, router, usePathname } from "expo-router";
 import { Pressable, Text, View } from "react-native";
+import { AuthUser, useAuth } from "@/context/AuthContext";
+export type UserRole = "admin" | "player";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
-const items: {
+interface NavItem {
+  key: "home" | "history" | "profile" | "games";
   label: string;
-  route: string;
   icon: IconName;
   activeIcon: IconName;
-}[] = [
-  { label: "Home", route: "/(player)/home", icon: "home-outline", activeIcon: "home" },
-  { label: "History", route: "/(player)/history", icon: "time-outline", activeIcon: "time" },
-  { label: "Profile", route: "/(player)/profile", icon: "person-outline", activeIcon: "person" },
-  { label: "Game", route: "/(player)/games", icon: "game-controller-outline", activeIcon: "game-controller" },
+  routes: Record<UserRole, Href>;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    key: "home",
+    label: "Home",
+    icon: "home-outline",
+    activeIcon: "home",
+    routes: {
+      player: "/(player)/dashboard",
+      admin: "/admin/dashboard",
+    },
+  },
+  {
+    key: "history",
+    label: "History",
+    icon: "time-outline",
+    activeIcon: "time",
+    routes: {
+      player: "/(player)/history",
+      admin: "/admin/results",
+    },
+  },
+  {
+    key: "profile",
+    label: "Profile",
+    icon: "person-outline",
+    activeIcon: "person",
+    routes: {
+      player: "/(player)/profile",
+      admin: "/admin/dashboard",
+    },
+  },
+  {
+    key: "games",
+    label: "Game",
+    icon: "game-controller-outline",
+    activeIcon: "game-controller",
+    routes: {
+      player: "/(player)/games",
+      admin: "/admin/games",
+    },
+  },
 ];
 
-export default function BottomNavigation() {
-  const pathname = usePathname();
+interface BottomNavigationProps {
+  role?: UserRole;
+}
 
+export default function BottomNavigation({ role }: BottomNavigationProps) {
+  const { user } = useAuth()
+  const pathname = usePathname() ?? "";
+  const normalizedRole: UserRole =
+    user?.role?.toLowerCase() === "admin" ? "admin" : "player";
   return (
     <View className="flex-row justify-around border-t border-gray-300 bg-white py-3 dark:border-slate-800 dark:bg-slate-900">
-      {items.map((item) => {
-        const segment = item.route.split("/").pop() ?? "";
-        const isActive = pathname.includes(segment);
+      {NAV_ITEMS.map((item) => {
+        const targetHref = item.routes[normalizedRole];
+        if (!targetHref) return null;
+
+        const targetRoute = String(targetHref);
+        const cleanTarget = targetRoute.replace(/\/\([^)]+\)/g, "");
+        const isActive =
+          Boolean(pathname) &&
+          (pathname === cleanTarget || pathname.startsWith(`${cleanTarget}/`));
 
         return (
           <Pressable
-            key={item.label}
-            onPress={() => router.replace(item.route as any)}
+            key={item.key}
+            onPress={() => {
+              if (!isActive) {
+                router.replace(targetHref);
+              }
+            }}
             className="items-center justify-center px-3"
           >
             <Ionicons
@@ -37,9 +94,8 @@ export default function BottomNavigation() {
               color={isActive ? "#16a34a" : "#6b7280"}
             />
             <Text
-              className={`mt-1 text-xs ${
-                isActive ? "font-bold text-green-600" : "text-gray-500"
-              }`}
+              className={`mt-1 text-xs ${isActive ? "font-bold text-green-600" : "text-gray-500"
+                }`}
             >
               {item.label}
             </Text>

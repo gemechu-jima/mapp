@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import {banner} from "@/assets/banners/banner"
 import ComingSoonDisplay from "@/components/ComingSoonDisplay";
+import StatCard from "@/components/ui/StatCard"
 export default function PlayerDashboard() {
   const { user } = useAuth();
   const [myReservationsCount, setMyReservationsCount] = useState<number | null>(null);
