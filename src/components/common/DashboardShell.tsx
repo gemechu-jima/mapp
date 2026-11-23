@@ -6,6 +6,7 @@ import PlayerSidebar from "@/components/layout/PlayerSidebar";
 import BottonNavigation from "./BottomNavigation";
 import { useAuth } from "@/context/AuthContext";
 import { PaymentService } from "@/services/payment.service";
+import { NotificationService } from "@/services/notification.service";
 import { router } from "expo-router";
 import { Bell } from "lucide-react-native";
 import { useEffect, useState, type ReactNode } from "react";
@@ -30,6 +31,10 @@ export default function DashboardShell({ role, children }: Props) {
           ).length;
           setUnreadCount(pending);
         })
+        .catch(() => {});
+    } else {
+      NotificationService.getUnreadCount()
+        .then((res) => setUnreadCount(res.unreadCount))
         .catch(() => {});
     }
   }, [role]);
@@ -79,7 +84,7 @@ export default function DashboardShell({ role, children }: Props) {
             className="relative rounded-xl p-2"
           >
             <Bell size={20} color="#64748b" />
-            {role === "admin" && unreadCount > 0 ? (
+            {unreadCount > 0 ? (
               <View className="absolute right-1 top-1 h-4 min-w-[16px] items-center justify-center rounded-full bg-red-600 px-1">
                 <Text className="text-[10px] font-bold text-white">
                   {unreadCount > 9 ? "9+" : unreadCount}

@@ -6,9 +6,11 @@ export interface OfficialDrawWinner {
   tierName?: string;
   pct?: number;
   reservationId: number;
+  numberId?: number;
   number: number;
   displayName: string;
   prizeAmount: number;
+  userId?: number;
 }
 
 export interface OfficialDrawResult {
@@ -16,6 +18,18 @@ export interface OfficialDrawResult {
   gameId: number;
   status: 'COMPLETED';
   winners: OfficialDrawWinner[];
+  createdAt: string;
+}
+
+export interface DrawHistoryRecord {
+  id: number;
+  gameId: number;
+  gameTitle: string;
+  gameTotalNumbers?: number;
+  numberPrice?: number;
+  status: 'COMPLETED';
+  winners: OfficialDrawWinner[];
+  totalPrize: number;
   createdAt: string;
 }
 
@@ -37,5 +51,8 @@ export const DrawService = {
   },
   async getOfficialResults(gameId: number): Promise<OfficialDrawResult[]> {
     return (await api.get<OfficialDrawResult[]>(`/draws/game/${gameId}/results`)).data;
+  },
+  async getDrawHistory(): Promise<DrawHistoryRecord[]> {
+    return (await api.get<DrawHistoryRecord[]>('/draws/history')).data;
   },
 };
