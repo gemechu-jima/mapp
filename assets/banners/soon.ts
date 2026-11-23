@@ -2,6 +2,11 @@ import { ImageSourcePropType } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const cover: ImageSourcePropType = require('../images/cover.png');
+const car: ImageSourcePropType = require('../documents/car.jpg');
+const car2: ImageSourcePropType = require('../documents/car1.jpg');
+const house: ImageSourcePropType = require('../documents/house1.jpg');
+const kichen: ImageSourcePropType = require('../documents/kichen.jpg');
+const kichen1: ImageSourcePropType = require('../documents/kichen1.jpg');
 
 export interface ComingSoonFeature {
   icon: keyof typeof Ionicons.glyphMap;
@@ -19,74 +24,90 @@ export interface ComingSoonItem {
   features: ComingSoonFeature[];
 }
 
-export const soonData: Record<string, ComingSoonItem> = {
-  default: {
-    id: 'default',
-    badge: 'COMING SOON',
-    releaseTag: 'NEXT UPDATE',
-    title: 'New Feature Under Construction',
-    description:
-      'We are putting the finishing touches on this page to bring you an even better experience.',
-    image: cover,
-    features: [
-      {
-        icon: 'flash-outline',
-        title: 'Instant Live Results',
-        subtitle: 'Real-time updates the moment a draw closes.',
-      },
-      {
-        icon: 'trophy-outline',
-        title: 'Bigger Bonus Pools',
-        subtitle: 'Unlock special rewards and multiplier rounds.',
-      },
-      {
-        icon: 'shield-checkmark-outline',
-        title: 'Fair & Verified',
-        subtitle: 'Transparent draw history you can check anytime.',
-      },
-    ],
-  },
-
-  leaderboard: {
-    id: 'leaderboard',
-    badge: 'COMING SOON',
-    releaseTag: 'VERSION 1.1',
-    title: 'Weekly Top Winners',
-    description:
-      'Track top lucky numbers, streak champions, and weekly prize leaderboards.',
-    image: cover,
-    features: [
-      {
-        icon: 'podium-outline',
-        title: 'Live Rankings',
-        subtitle: 'See top players updated immediately after every draw.',
-      },
-      {
-        icon: 'gift-outline',
-        title: 'Monthly Milestone Rewards',
-        subtitle: 'Extra bonus entries for top 10 finishers.',
-      },
-    ],
-  },
-
-  wallet: {
-    id: 'wallet',
-    badge: 'COMING SOON',
-    releaseTag: 'IN PROGRESS',
-    title: 'Instant Wallet & Payouts',
-    description: 'Manage your balance, view transaction history, and withdraw winnings seamlessly.',
-    image: cover,
-    features: [
-      {
-        icon: 'wallet-outline',
-        title: 'Fast Local Payouts',
-        subtitle: 'Quick and secure transfers directly to your account.',
-      },
-      {
-        icon: 'receipt-outline',
-        title: 'Full Draw Receipts',
-        subtitle: 'Detailed history of every entry and reward earned.',
-      },
-    ],
-  },
+export const carSoon: ComingSoonItem = {
+  id: 'car',
+  badge: 'COMING SOON',
+  releaseTag: 'GRAND PRIZE',
+  title: 'Luxury Car Lucky Draw',
+  description: 'Enter upcoming special rounds for a chance to win brand-new vehicles.',
+  image: car,
+  features: [
+    {
+      icon: 'car-sport-outline',
+      title: 'Verified Vehicle Prizes',
+      subtitle: 'Full ownership transfer and transparent live draw.',
+    },
+    {
+      icon: 'ticket-outline',
+      title: 'Bonus Ticket Entries',
+      subtitle: 'Regular players earn extra entries automatically.',
+    },
+  ],
 };
+
+export const houseSoon: ComingSoonItem = {
+  id: 'house',
+  badge: 'COMING SOON',
+  releaseTag: 'MEGA DRAW',
+  title: 'Dream Home Jackpot',
+  description: 'Participate in milestone community draws with life-changing home prizes.',
+  image: house,
+  features: [
+    {
+      icon: 'home-outline',
+      title: 'Prime Location Homes',
+      subtitle: 'Modern apartments ready for immediate handover.',
+    },
+    {
+      icon: 'shield-checkmark-outline',
+      title: 'Audited & Fair Draw',
+      subtitle: 'Live-streamed selection with instant verification.',
+    },
+  ],
+};
+
+export const kitchenSoon: ComingSoonItem = {
+  id: 'kitchen',
+  badge: 'COMING SOON',
+  releaseTag: 'WEEKLY REWARD',
+  title: 'Modern Kitchen & Appliance Pack',
+  description: 'Weekly home makeover bundles and premium kitchen appliances.',
+  image: kichen,
+  features: [
+    {
+      icon: 'gift-outline',
+      title: 'Weekly Winner Drops',
+      subtitle: 'Multiple winners selected every Sunday.',
+    },
+    {
+      icon: 'flash-outline',
+      title: 'Fast Delivery',
+      subtitle: 'Direct doorstep delivery or cash equivalent option.',
+    },
+  ],
+};
+
+// Export all items as an array so the component can loop and display them
+export const soonItems: ComingSoonItem[] = [
+  carSoon,
+  houseSoon,
+  kitchenSoon,
+  {
+    id: 'car-special',
+    badge: 'COMING SOON',
+    releaseTag: 'VIP ROUND',
+    title: 'Weekend Speedster Edition',
+    description: 'Exclusive limited-seat number draw with boosted odds.',
+    image: car2,
+    features: [],
+  },
+  {
+    id: 'kitchen-deluxe',
+    badge: 'COMING SOON',
+    releaseTag: 'BONUS POOL',
+    title: 'Deluxe Home Appliances',
+    description: 'Complete home upgrade packages for lucky number holders.',
+    image: kichen1,
+    features: [],
+  },
+];

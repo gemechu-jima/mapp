@@ -144,10 +144,12 @@ return (
               <TextInput
                 value={phoneNumber}
                 onChangeText={setPhoneNumber}
-                placeholder="Enter your phone number"
+                placeholder="09XXXXXXXX"
                 placeholderTextColor="#94A3B8"
                 keyboardType="phone-pad"
                 autoComplete="tel"
+                textContentType="telephoneNumber"
+                importantForAutofill='yes'
                 className="flex-1 px-3 py-3.5 text-slate-900 dark:text-white"
               />
             </View>

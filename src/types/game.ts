@@ -19,6 +19,14 @@ export interface Game {
   telegramMessageId?: string;
   createdBy: number;
   reservationMinutes: number;
+  numberPrice?: number;
+  prizeDistribution?: {
+    first: number;
+    second: number;
+    third: number;
+    fourth?: number;
+    system?: number;
+  };
   createdAt: string;
   updatedAt: string;
 }

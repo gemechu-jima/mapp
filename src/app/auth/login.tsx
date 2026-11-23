@@ -101,7 +101,7 @@ export default function LoginScreen() {
     }
   }
 
-    return (
+  return (
     <ImageBackground
       source={require("../../../assets/images/cover.png")}
       resizeMode="cover"
@@ -144,6 +144,8 @@ export default function LoginScreen() {
                 placeholderTextColor="#94A3B8"
                 keyboardType="phone-pad"
                 autoComplete="tel"
+                textContentType="telephoneNumber"
+                importantForAutofill="yes"
                 className="flex-1 px-3 py-3.5 text-slate-900 dark:text-white"
               />
             </View>
@@ -207,5 +209,5 @@ export default function LoginScreen() {
         </ScrollView>
       </View>
     </ImageBackground>
-  )
+  );
 }

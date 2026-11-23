@@ -7,6 +7,7 @@ const placeLabels: Record<number, string> = {
   1: '🥇 1st Place',
   2: '🥈 2nd Place',
   3: '🥉 3rd Place',
+  4: '🎖️ 4th Place',
 };
 
 type Props = {

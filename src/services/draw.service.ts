@@ -1,11 +1,21 @@
 import { api } from './api';
 import type { CreateDrawDto, DrawResponse } from '@/types/draw';
 
+export interface OfficialDrawWinner {
+  place: number;
+  tierName?: string;
+  pct?: number;
+  reservationId: number;
+  number: number;
+  displayName: string;
+  prizeAmount: number;
+}
+
 export interface OfficialDrawResult {
   id: number;
   gameId: number;
   status: 'COMPLETED';
-  winners: { place: number; reservationId: number; number: number; displayName: string; prizeAmount: number }[];
+  winners: OfficialDrawWinner[];
   createdAt: string;
 }
 
