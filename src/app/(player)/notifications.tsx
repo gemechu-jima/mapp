@@ -17,6 +17,7 @@ import { NotificationService } from "@/services/notification.service";
 import type { AppNotification } from "@/types/notification";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import { Bell, Check, CheckCheck, RefreshCw, Trophy, Wallet, Ticket, Info } from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function PlayerNotificationsScreen() {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -104,11 +105,31 @@ export default function PlayerNotificationsScreen() {
       subtitle="Real-time updates on your draw winnings, payment verifications, and game announcements."
     >
       {/* Top Stat Overview */}
-      <View className="mb-4 flex-row gap-3">
-        <StatCard label="Total" value={notifications.length} icon="🔔" />
-        <StatCard label="Unread" value={unreadCount} icon="📫" />
-        <StatCard label="Wins" value={winCount} icon="🏆" />
-      </View>
+  <View className="flex-row flex-wrap gap-3 m-4">
+  <View className="min-w-[46%] flex-1">
+    <StatCard
+      label="Total"
+      value={unreadCount}
+      icon={<Ionicons name="at-circle" size={18} color="#eb2525ff" />}
+    />
+  </View>
+
+  <View className="min-w-[46%] flex-1">
+    <StatCard
+      label="Unread"
+      value={notifications.length} 
+      icon={<Ionicons name="notifications" size={18} color="#e1ee2bff" />}
+    />
+  </View>
+
+  <View className="min-w-[46%] flex-1">
+    <StatCard
+      label="Wins"
+      value={winCount}
+      icon={<Ionicons name="trophy" size={18} color="#09f684ff" />}
+    />
+  </View>
+</View>
 
       {/* Action Bar & Filters */}
       <View className="mb-4 flex-row flex-wrap items-center justify-between gap-2">
