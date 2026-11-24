@@ -1,39 +1,46 @@
-name: Build Android APK via EAS
+name: Build Android APK
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+  push:
+    branches: [main]
 
 jobs:
-  build:
-    name: EAS Android Preview Builds
+  build-android:
+    name: Build APK on GitHub Runner
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: npm
+
+      - name: Setup Java 17 (Required for Android Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Expo & EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Link or Create Expo Project
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx --yes eas-cli@latest init --account onetwo1 --non-interactive --force
+      - name: Build Android APK locally on GitHub Runner
+        run: npx eas-cli build --platform android --profile preview-modern --local --non-interactive --output=./app-release.apk
 
-      - name: Trigger Modern Android APK Build (64-bit)
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx --yes eas-cli@latest build --platform android --profile preview-modern --non-interactive --no-wait
-
-      - name: Trigger Legacy Android APK Build (32-bit Old Phones)
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx --yes eas-cli@latest build --platform android --profile preview-legacy --non-interactive --no-wait
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: ./app-release.apk
+          retention-days: 14
