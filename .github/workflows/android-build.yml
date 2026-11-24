@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   build-android:
     name: Build APK on GitHub Runner
@@ -36,6 +39,10 @@ jobs:
         run: npm ci
 
       - name: Build Android APK locally on GitHub Runner
+        env:
+          AUTH_ENDPOINT: ${{ secrets.AUTH_ENDPOINT }}
+          PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
+          URL_ENDPOINT: ${{ secrets.URL_ENDPOINT }}
         run: npx eas-cli build --platform android --profile preview-modern --local --non-interactive --output=./app-release.apk
 
       - name: Upload APK Artifact
@@ -44,3 +51,10 @@ jobs:
           name: android-apk
           path: ./app-release.apk
           retention-days: 14
+
+      - name: Publish APK to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Android APK Build #${{ github.run_number }}
+          files: ./app-release.apk
