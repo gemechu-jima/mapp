@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { Alert, Platform, Pressable, View } from "react-native";
 import Screen from "@/components/ui/Screen";
 import AppButton from "@/components/ui/AppButton";
-import ReservationCard from "@/features/reservations/ReservationCard";
+import ReservationCard, {
+  type ReservationRowItem,
+} from "@/features/reservations/ReservationCard";
 import { ReservationService } from "@/services/reservation.service";
 import { useAuth } from "@/context/AuthContext";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
@@ -107,6 +109,17 @@ export default function ReservationsScreen() {
     }
   };
 
+  const tableRows: ReservationRowItem[] = filtered.map((r) => ({
+    id: r.id,
+    game: r.game,
+    number: r.number,
+    status: r.status,
+    expiresAt: r.expiresAt,
+    displayName: r.displayName,
+    canPay: r.status === "PENDING" && view === "MINE",
+    canCancel: r.status === "PENDING" && view === "MINE",
+  }));
+
   return (
     <Screen
       title="Reservations"
@@ -134,10 +147,16 @@ export default function ReservationsScreen() {
           <Pressable
             key={s}
             onPress={() => setFilter(s)}
-            className={`rounded-full px-3 py-2 ${filter === s ? "bg-blue-600" : "bg-white dark:bg-slate-900"}`}
+            className={`rounded-full px-3 py-2 ${
+              filter === s ? "bg-blue-600" : "bg-white dark:bg-slate-900"
+            }`}
           >
             <Text
-              className={`text-xs font-semibold ${filter === s ? "text-white" : "text-slate-700 dark:text-slate-300"}`}
+              className={`text-xs font-semibold ${
+                filter === s
+                  ? "text-white"
+                  : "text-slate-700 dark:text-slate-300"
+              }`}
             >
               {s === "ALL" ? "All" : s}
             </Text>
@@ -151,35 +170,22 @@ export default function ReservationsScreen() {
             Loading reservations…
           </Text>
         </View>
-      ) : filtered.length ? (
-        filtered.map((r) => (
-          <ReservationCard
-            key={r.id}
-            id={r.id}
-            game={r.game}
-            number={r.number}
-            status={r.status}
-            expiresAt={r.expiresAt}
-            onPay={
-              r.status === "PENDING"
-                ? () =>
-                    router.push({
-                      pathname: "/(player)/payments",
-                      params: {
-                        reservationId: String(r.id),
-                        gameTitle: r.game,
-                        number: String(r.number),
-                      },
-                    })
-                : undefined
-            }
-            onCancel={
-              r.status === "PENDING" && view === "MINE"
-                ? () => cancel(r.id)
-                : undefined
-            }
-          />
-        ))
+      ) : tableRows.length ? (
+        <ReservationCard
+          items={tableRows}
+          showPlayer={view === "ALL"}
+          onPay={(r) =>
+            router.push({
+              pathname: "/(player)/payments",
+              params: {
+                reservationId: String(r.id),
+                gameTitle: r.game,
+                number: String(r.number),
+              },
+            })
+          }
+          onCancel={(r) => cancel(Number(r.id))}
+        />
       ) : (
         <View className="items-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 dark:border-slate-700 dark:bg-slate-900">
           <Text className="font-semibold text-slate-700 dark:text-slate-200">

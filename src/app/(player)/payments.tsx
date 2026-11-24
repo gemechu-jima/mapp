@@ -6,44 +6,63 @@ import ImageUpload from "@/components/ImageUpload";
 import AppButton from "@/components/ui/AppButton";
 import Screen from "@/components/ui/Screen";
 import StatusPill from "@/components/ui/StatusPill";
+import { useAuth } from "@/context/AuthContext";
 import FeatureNotice from "@/features/shared/FeatureNotice";
 import { uploadApi } from "@/services/api";
 import { PaymentService } from "@/services/payment.service";
+import { ReservationService } from "@/services/reservation.service";
+import { uploadToImageKit } from "@/shared/imagekitService";
 import {
   detectPaymentProvider,
   type DetectedPaymentMethod,
 } from "@/shared/paymentDetector";
 import { paymentOptions } from "@/shared/paymentOptions";
-import { uploadToImageKit } from "@/shared/imagekitService";
-import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { Alert, Platform, Pressable, Share, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Platform, Pressable, Share, View } from "react-native";
+
+type PendingReservation = {
+  id: number;
+  gameId: number;
+  gameTitle: string;
+  number: number;
+  price: number;
+  status: string;
+  expiresAt: string;
+};
+
+function formatCountdown(msRemaining: number): string {
+  if (msRemaining <= 0) return "00:00";
+  const totalSeconds = Math.floor(msRemaining / 1000);
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
 
 export default function PlayerPayments() {
+  const { user } = useAuth();
   const params = useLocalSearchParams<{
-    gameTitle?: string;
-    numbers?: string;
-    number?: string;
-    /** Single reservation (from reservations list) */
     reservationId?: string;
-    /** Comma-separated reservation IDs (from game-details after multi-select) */
     reservationIds?: string;
     gameId?: string;
   }>();
 
-  // Support both single and multiple reservation IDs
-  const reservationId =
-    params.reservationId || params.reservationIds?.split(",")[0];
-  const allReservationIds = params.reservationIds
-    ? params.reservationIds.split(",").filter(Boolean)
-    : params.reservationId
-      ? [params.reservationId]
-      : [];
+  // Optional pre-selected IDs if navigated directly from reservation/game screen
+  const initialParamIds = useMemo(() => {
+    if (params.reservationIds) {
+      return params.reservationIds.split(",").map(Number).filter(Boolean);
+    }
+    if (params.reservationId) {
+      return [Number(params.reservationId)].filter(Boolean);
+    }
+    return [];
+  }, [params.reservationId, params.reservationIds]);
 
-  const selectedNumbers = (params.numbers || params.number || "")
-    .split(",")
-    .filter(Boolean);
+  const [pendingList, setPendingList] = useState<PendingReservation[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [loadingReservations, setLoadingReservations] = useState(true);
+  const [now, setNow] = useState(() => Date.now());
 
   const [provider, setProvider] = useState("CBE");
   const [autoDetected, setAutoDetected] = useState<DetectedPaymentMethod>(null);
@@ -55,13 +74,105 @@ export default function PlayerPayments() {
   const checkTimeoutRef = useRef<any>(null);
 
   const [proof, setProof] = useState<string | null>(null);
-  const [proofUrl, setProofUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const selectedPayment = paymentOptions.find(
     (option) => option.type === provider,
   );
   const [copied, setCopied] = useState(false);
+
+  // 1. Live 1-second ticker for countdown timers
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // 2. Fetch active PENDING reservations from DB whenever screen opens/focuses
+  const loadPendingReservations = useCallback(async () => {
+    if (!user?.id) {
+      setPendingList([]);
+      setLoadingReservations(false);
+      return;
+    }
+
+    try {
+      setLoadingReservations(true);
+      const response: any = await ReservationService.getByUser(user.id);
+      const rawList = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+          ? response.data
+          : [];
+
+      const currentTime = Date.now();
+      const activePending: PendingReservation[] = rawList
+        .filter((r: any) => {
+          if (r.status !== "PENDING") return false;
+          if (!r.expiresAt) return true;
+          return new Date(r.expiresAt).getTime() > currentTime;
+        })
+        .map((r: any) => ({
+          id: Number(r.id),
+          gameId: Number(r.gameId),
+          gameTitle: r.gameTitle || r.game?.title || `Game #${r.gameId}`,
+          number: r.number?.number ?? r.numberId,
+          price: Number(r.game?.numberPrice ?? r.numberPrice ?? r.amount ?? 100),
+          status: r.status,
+          expiresAt: r.expiresAt,
+        }));
+
+      setPendingList(activePending);
+
+      // Select URL-passed IDs if present, otherwise select all active pending reservations
+      if (initialParamIds.length > 0) {
+        const matched = activePending
+          .filter((item) => initialParamIds.includes(item.id))
+          .map((item) => item.id);
+        setSelectedIds(
+          matched.length > 0 ? matched : activePending.map((i) => i.id),
+        );
+      } else {
+        setSelectedIds(activePending.map((i) => i.id));
+      }
+    } catch {
+      setPendingList([]);
+    } finally {
+      setLoadingReservations(false);
+    }
+  }, [user?.id, initialParamIds]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadPendingReservations();
+    }, [loadPendingReservations]),
+  );
+
+  // Filter out items whose countdown just hit 0 in real time
+  const activeReservations = useMemo(
+    () =>
+      pendingList.filter(
+        (r) => !r.expiresAt || new Date(r.expiresAt).getTime() > now,
+      ),
+    [pendingList, now],
+  );
+
+  const selectedReservations = useMemo(
+    () => activeReservations.filter((r) => selectedIds.includes(r.id)),
+    [activeReservations, selectedIds],
+  );
+
+  const totalAmount = useMemo(
+    () => selectedReservations.reduce((sum, r) => sum + (r.price || 100), 0),
+    [selectedReservations],
+  );
+
+  const toggleSelectReservation = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
 
   const handleCopyNumber = async (number: string) => {
     try {
@@ -90,17 +201,15 @@ export default function PlayerPayments() {
       );
     }
   };
-  // Auto-detect payment provider and check unique reference number
+
   const handleReferenceChange = (text: string) => {
     setReference(text);
-    // 1. Auto-detect payment method (provider) from reference pattern
     const detected = detectPaymentProvider(text);
     if (detected) {
       setProvider(detected);
       setAutoDetected(detected);
     }
 
-    // 2. Debounce uniqueness check with backend
     if (checkTimeoutRef.current) {
       clearTimeout(checkTimeoutRef.current);
     }
@@ -118,9 +227,12 @@ export default function PlayerPayments() {
 
     checkTimeoutRef.current = setTimeout(async () => {
       try {
+        const firstSelected = selectedReservations[0];
         const res = await PaymentService.checkReference(clean, {
-          reservationId,
-          gameId: params.gameId,
+          reservationId: firstSelected ? String(firstSelected.id) : undefined,
+          gameId: firstSelected
+            ? String(firstSelected.gameId)
+            : params.gameId,
         });
 
         if (res.isUnique) {
@@ -136,8 +248,7 @@ export default function PlayerPayments() {
               "This transaction reference has already been used.",
           });
         }
-      } catch (err: any) {
-        // Network or server error during check - don't hard block user typing
+      } catch {
         setRefCheckState({ status: "idle", message: "" });
       }
     }, 500);
@@ -152,8 +263,11 @@ export default function PlayerPayments() {
   }, []);
 
   const handlePayment = async () => {
-    if (allReservationIds.length === 0) {
-      Alert.alert("Error", "Reservation not found.");
+    if (selectedReservations.length === 0) {
+      Alert.alert(
+        "No active reservation",
+        "You have no active reserved numbers selected, or your reservation time expired.",
+      );
       return;
     }
 
@@ -200,9 +314,8 @@ export default function PlayerPayments() {
           tags: ["payment-proof", selectedPayment.type],
         },
       );
-      setProofUrl(uploadedImage.url);
 
-      // 2. Prepare proof file for both Web (File/Blob) and Native ({ uri, name, type })
+      // 2. Prepare proof file for Web and Native
       let proofFile: any = {
         uri: proof,
         name: proofFileName,
@@ -217,8 +330,9 @@ export default function PlayerPayments() {
         });
       }
 
-      // 3. Submit proof for each reservation (usually just one, but supports multi)
-      for (const resId of allReservationIds) {
+      // 3. Submit proof for each selected active reservation
+      for (const item of selectedReservations) {
+        const resId = String(item.id);
         const formData = new FormData();
         formData.append("provider", selectedPayment.type);
         formData.append("reservationId", resId);
@@ -233,17 +347,23 @@ export default function PlayerPayments() {
       }
 
       setSubmitted(true);
-      Alert.alert(
-        "Payment submitted",
-        "Your payment proof was submitted successfully. Please wait for admin verification.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.replace("/(player)/reservations"),
-          },
-        ],
-      );
-      router.replace("/(player)/dashboard");
+      if (Platform.OS === "web") {
+        window.alert(
+          "Payment submitted! Your payment proof is under admin verification.",
+        );
+        router.replace("/(player)/reservations");
+      } else {
+        Alert.alert(
+          "Payment submitted",
+          "Your payment proof was submitted successfully. Please wait for admin verification.",
+          [
+            {
+              text: "OK",
+              onPress: () => router.replace("/(player)/reservations"),
+            },
+          ],
+        );
+      }
     } catch (error: any) {
       console.error("Payment submission failed:", error);
       Alert.alert(
@@ -259,37 +379,125 @@ export default function PlayerPayments() {
   return (
     <Screen
       title="Submit Payment"
-      subtitle="Transfer the amount using the account details below, then upload your payment screenshot."
+      subtitle="Transfer the amount using the account details below before your reservation timer expires."
     >
       <FeatureNotice
         title="Manual payment workflow"
-        body="Transfer the amount using the account details provided. Upload a screenshot of your successful transfer for admin verification."
+        body="Transfer the exact total for your active reservations below, then upload your payment screenshot before the countdown reaches 00:00."
       />
 
-      {/* Reservation summary */}
-      {params.gameTitle ||
-      selectedNumbers.length > 0 ||
-      allReservationIds.length > 0 ? (
+      {/* Active Reserved Numbers from Database with Live Countdown */}
+      {loadingReservations ? (
         <View className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-          <Text className="mb-1 font-semibold text-slate-900 dark:text-white">
-            {params.gameTitle || "Reservation payment"}
-          </Text>
-          {selectedNumbers.length > 0 ? (
-            <Text className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-              Numbers: {selectedNumbers.join(", ")}
-            </Text>
-          ) : null}
-          {allReservationIds.length > 0 ? (
-            <Text className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-              Reservation{allReservationIds.length > 1 ? "s" : ""}: #
-              {allReservationIds.join(", #")}
-            </Text>
-          ) : null}
-          <Text className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
-            Estimated amount: {selectedNumbers.length * 100 || 100} ETB
+          <Text className="text-sm text-slate-500 dark:text-slate-400">
+            Loading your active reservations…
           </Text>
         </View>
-      ) : null}
+      ) : activeReservations.length > 0 ? (
+        <View className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+          <View className="mb-2 flex-row items-center justify-between">
+            <Text className="font-bold text-slate-900 dark:text-white">
+              Your Active Reservations ({selectedReservations.length}/
+              {activeReservations.length})
+            </Text>
+            <Text className="text-xs text-slate-500 dark:text-slate-400">
+              Tap to select
+            </Text>
+          </View>
+
+          <View className="gap-2">
+            {activeReservations.map((item) => {
+              const isSelected = selectedIds.includes(item.id);
+              const remainingMs = item.expiresAt
+                ? Math.max(0, new Date(item.expiresAt).getTime() - now)
+                : 0;
+              const isUrgent = remainingMs > 0 && remainingMs <= 60_000;
+
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => toggleSelectReservation(item.id)}
+                  className={`flex-row items-center justify-between rounded-xl border p-3 ${
+                    isSelected
+                      ? "border-blue-600 bg-blue-50/70 dark:border-blue-500 dark:bg-blue-950/40"
+                      : "border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950"
+                  }`}
+                >
+                  <View className="flex-row items-center gap-2.5 flex-1">
+                    <Ionicons
+                      name={isSelected ? "checkbox" : "square-outline"}
+                      size={20}
+                      color={isSelected ? "#2563EB" : "#94A3B8"}
+                    />
+                    <View className="flex-1">
+                      <Text
+                        numberOfLines={1}
+                        className="text-sm font-bold text-slate-900 dark:text-white"
+                      >
+                        {item.gameTitle} · Number #{item.number}
+                      </Text>
+                      <Text className="text-xs text-slate-500 dark:text-slate-400">
+                        Res #{item.id} · {item.price} ETB
+                      </Text>
+                    </View>
+                  </View>
+
+                  {item.expiresAt ? (
+                    <View
+                      className={`flex-row items-center gap-1 rounded-lg px-2.5 py-1 ${
+                        isUrgent
+                          ? "bg-rose-100 dark:bg-rose-950/70"
+                          : "bg-amber-100 dark:bg-amber-950/70"
+                      }`}
+                    >
+                      <Ionicons
+                        name="time-outline"
+                        size={13}
+                        color={isUrgent ? "#E11D48" : "#D97706"}
+                      />
+                      <Text
+                        className={`text-xs font-extrabold ${
+                          isUrgent
+                            ? "text-rose-700 dark:text-rose-300"
+                            : "text-amber-700 dark:text-amber-300"
+                        }`}
+                      >
+                        {formatCountdown(remainingMs)}
+                      </Text>
+                    </View>
+                  ) : null}
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <View className="mt-3 flex-row items-center justify-between border-t border-slate-100 pt-3 dark:border-slate-800">
+            <Text className="text-sm font-medium text-slate-600 dark:text-slate-300">
+              Total Amount Due
+            </Text>
+            <Text className="text-base font-extrabold text-blue-600 dark:text-blue-400">
+              {totalAmount} ETB
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <View className="mb-4 rounded-2xl border border-dashed border-slate-300 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+          <Text className="font-bold text-slate-900 dark:text-white">
+            No active unpaid reservations
+          </Text>
+          <Text className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Your reserved numbers have either expired and been released or you
+            haven't reserved any numbers yet.
+          </Text>
+          <View className="mt-3">
+            <AppButton
+              title="Browse Games"
+              variant="secondary"
+              onPress={() => router.push("/(player)/games")}
+            />
+          </View>
+        </View>
+      )}
 
       <View className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
         <Text className="mb-3 text-lg font-bold text-slate-900 dark:text-white">
@@ -321,7 +529,6 @@ export default function PlayerPayments() {
           ))}
         </View>
 
-        {/* Payment info */}
         {/* Payment info */}
         {selectedPayment && (
           <View className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
@@ -431,15 +638,17 @@ export default function PlayerPayments() {
           <AppButton
             title={submitting ? "Submitting..." : "Submit Payment Proof"}
             onPress={handlePayment}
-            disabled={submitting || submitted }
+            disabled={
+              submitting || submitted || selectedReservations.length === 0
+            }
             loading={submitting}
             className={
-            submitted
-              ? "bg-emerald-600"
-              : submitting
-                ? "bg-blue-400"
-                : "bg-blue-600 active:bg-blue-700"
-          }
+              submitted
+                ? "bg-emerald-600"
+                : submitting
+                  ? "bg-blue-400"
+                  : "bg-blue-600 active:bg-blue-700"
+            }
           />
         </View>
 
