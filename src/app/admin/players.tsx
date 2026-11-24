@@ -18,6 +18,7 @@ import FeatureNotice from "@/features/shared/FeatureNotice";
 import { UserService } from "@/services/user.service";
 import { type User } from "@/types/user";
 import { Ionicons } from "@expo/vector-icons";
+import Search, { useSearch } from "@/features/shared/Search";
 
 export default function AdminPlayers() {
   const [users, setUsers] = useState<User[]>([]);
@@ -32,6 +33,13 @@ export default function AdminPlayers() {
   const [editLastName, setEditLastName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [saving, setSaving] = useState(false);
+const { query, setQuery, filteredItems } = useSearch(users, (u) => [
+  u.firstName,
+  u.lastName,
+  u.phoneNumber,
+  u.activationCode,
+]);
+
 
   const notify = (msg: string) =>
     Platform.OS === "web" ? window.alert(msg) : Alert.alert("Players", msg);
@@ -174,6 +182,14 @@ export default function AdminPlayers() {
       title="Players & Activation Codes"
       subtitle="Manage player accounts and share activation codes via the three-dot menu."
     >
+
+      <Search
+  value={query}
+  onChangeText={setQuery}
+  placeholder="Search by name, phone, or code…"
+  resultCount={filteredItems.length}
+/>
+  
       {/* Summary Stats */}
     <View className="mb-4 flex-row gap-3">
         <View className="flex-1">

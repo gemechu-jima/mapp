@@ -22,3 +22,7 @@ export async function registerUser(data: RegisterRequest): Promise<AuthResponse>
   const response = await api.post<AuthResponse>('/users/register', data);
   return response.data;
 }
+export async function registerUserSMS(data: RegisterRequest): Promise<AuthResponse> {
+  const response = await api.post<AuthResponse>('/users/register-sms', data);
+  return response.data;
+}

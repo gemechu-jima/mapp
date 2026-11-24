@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 import AppButton from "@/components/ui/AppButton";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import { TranslatedTextInput as TextInput } from "@/components/common/TranslatedText";
+import { SettingService } from "@/services/setting.service";
 type GameDraft = {
   title: string;
   totalNumbers: number;
@@ -34,13 +35,29 @@ export default function GameAdminForm({
   const [third, setThird] = useState("10");
   const [fourth, setFourth] = useState("0");
   const [system, setSystem] = useState("10");
+
   const shareTotal =
     Number(first) +
     Number(second) +
     Number(third) +
     Number(fourth) +
     Number(system);
+  useEffect(() => {
+    let alive = true;
+    SettingService.get()
+      .then((data) => {
+        if (!alive) return;
 
+        if (data.defaultReservationMinutes != null) {
+          setMinutes(String(data.defaultReservationMinutes));
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      alive = false;
+    };
+  }, []);
   return (
     <View className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
       <Text className="mb-4 text-lg font-bold text-slate-900 dark:text-white">
@@ -52,7 +69,7 @@ export default function GameAdminForm({
       <TextInput
         value={title}
         onChangeText={setTitle}
-        placeholder="e.g. Friday Bingo"
+        placeholder="e.g Big Night"
         className="mb-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
       />
       <Text className="mb-1 text-sm font-semibold text-slate-600 dark:text-slate-300">

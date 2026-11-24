@@ -74,12 +74,49 @@ function getGamePrizeTiers(game: Game | null): PrizeTier[] {
   return tiers;
 }
 
+// Samples 12 evenly distributed numbers across the total pool (covers 1..200 range)
+function getInitialWheelNumbers(all: ConfirmedEntry[]): ConfirmedEntry[] {
+  if (all.length <= 12) return all;
+  const step = all.length / 12;
+  const sampled: ConfirmedEntry[] = [];
+  for (let i = 0; i < 12; i++) {
+    const idx = Math.min(Math.floor(i * step), all.length - 1);
+    sampled.push(all[idx]);
+  }
+  return sampled;
+}
+
+// Randomly samples count distinct entries from the pool (optionally excluding a number)
+function pickRandomNumbers(
+  pool: ConfirmedEntry[],
+  count: number,
+  excludeNumber?: number
+): ConfirmedEntry[] {
+  if (pool.length === 0) return [];
+  const filtered =
+    excludeNumber !== undefined
+      ? pool.filter((x) => Number(x.number) !== excludeNumber)
+      : [...pool];
+
+  const source = filtered.length > 0 ? filtered : pool;
+  const shuffled = [...source].sort(() => 0.5 - Math.random());
+  if (shuffled.length >= count) return shuffled.slice(0, count);
+
+  // If pool has fewer than count items, repeat to fill slots
+  const res: ConfirmedEntry[] = [];
+  for (let i = 0; i < count; i++) {
+    res.push(shuffled[i % shuffled.length]);
+  }
+  return res;
+}
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function AdminDraw() {
   const [games, setGames] = useState<Game[]>([]);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [confirmedNumbers, setConfirmedNumbers] = useState<ConfirmedEntry[]>([]);
+  const [displayedWheelNumbers, setDisplayedWheelNumbers] = useState<ConfirmedEntry[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [drawing, setDrawing] = useState(false);
   const [results, setResults] = useState<OfficialDrawResult[]>([]);
@@ -90,9 +127,16 @@ export default function AdminDraw() {
   const [revealedWinners, setRevealedWinners] = useState<OfficialDrawWinner[]>([]);
   const [lastWinnerAnnounced, setLastWinnerAnnounced] = useState<OfficialDrawWinner | null>(null);
 
-  // Wheel rotation animations
+  // Wheel rotation animations & dynamic cycling ref
   const spinValue = useRef(new Animated.Value(0)).current;
   const currentRotation = useRef(0);
+  const cyclingIntervalRef = useRef<any>(null);
+
+  useEffect(() => {
+    return () => {
+      if (cyclingIntervalRef.current) clearInterval(cyclingIntervalRef.current);
+    };
+  }, []);
 
   const notify = (title: string, msg: string) =>
     Platform.OS === "web"
@@ -130,6 +174,7 @@ export default function AdminDraw() {
     NumberService.getConfirmedByGame(selectedGame.id)
       .then((res: ConfirmedEntry[]) => {
         setConfirmedNumbers(res);
+        setDisplayedWheelNumbers(getInitialWheelNumbers(res));
         setTotalCount(selectedGame.totalNumbers);
       })
       .catch(() => {});
@@ -211,23 +256,58 @@ export default function AdminDraw() {
 
         setCurrentSpinningTier(tier);
 
-        // Spin the wheel with natural acceleration and deceleration
-        const extraDegrees = 1800 + Math.floor(Math.random() * 360);
-        const targetRotation = currentRotation.current + extraDegrees;
+        // 1. Start dynamic cycling: numbers cycle rapidly every 80ms across the full 1..200 pool
+        if (cyclingIntervalRef.current) clearInterval(cyclingIntervalRef.current);
+        cyclingIntervalRef.current = setInterval(() => {
+          setDisplayedWheelNumbers(pickRandomNumbers(confirmedNumbers, 12));
+        }, 80);
 
+        // 2. Select target slot on the wheel for the winner to land under the pointer (12 o'clock)
+        const targetSlot = Math.floor(Math.random() * 12);
+        const landingAngle = (360 - targetSlot * 30) % 360;
+        const baseRotations = 1800 + Math.floor(Math.random() * 2) * 360;
+        const currentNormalized = currentRotation.current % 360;
+        const deltaToAlign = (landingAngle - currentNormalized + 360) % 360;
+        const targetRotation = currentRotation.current + baseRotations + deltaToAlign;
+
+        // 3. Halfway through the spin (1200ms), lock the final slots so winner lands on targetSlot
+        const lockTimer = setTimeout(() => {
+          if (cyclingIntervalRef.current) {
+            clearInterval(cyclingIntervalRef.current);
+            cyclingIntervalRef.current = null;
+          }
+          const other11 = pickRandomNumbers(confirmedNumbers, 11, Number(winner.number));
+          const finalSlots: ConfirmedEntry[] = [];
+          let otherIdx = 0;
+          for (let s = 0; s < 12; s++) {
+            if (s === targetSlot) {
+              finalSlots.push({ id: winner.reservationId || winner.number, number: winner.number });
+            } else {
+              finalSlots.push(other11[otherIdx++] || { id: s, number: s + 1 });
+            }
+          }
+          setDisplayedWheelNumbers(finalSlots);
+        }, 1200);
+
+        // 4. Spin animation with natural deceleration to land winner precisely at the pointer
         await new Promise<void>((resolve) => {
           Animated.timing(spinValue, {
             toValue: targetRotation,
-            duration: 2600,
+            duration: 2700,
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }).start(() => {
             currentRotation.current = targetRotation;
+            clearTimeout(lockTimer);
+            if (cyclingIntervalRef.current) {
+              clearInterval(cyclingIntervalRef.current);
+              cyclingIntervalRef.current = null;
+            }
             resolve();
           });
         });
 
-        // Reveal winner for this tier
+        // 5. Reveal winner for this tier
         accumulated.push(winner);
         setRevealedWinners([...accumulated]);
         setLastWinnerAnnounced(winner);
@@ -243,11 +323,19 @@ export default function AdminDraw() {
       setCurrentSpinningTier(null);
       notify("Draw complete", `All ${allWinners.length} winners have been successfully drawn!`);
     } catch (e: any) {
+      if (cyclingIntervalRef.current) {
+        clearInterval(cyclingIntervalRef.current);
+        cyclingIntervalRef.current = null;
+      }
       notify(
         "Draw failed",
         e?.response?.data?.message ?? "Could not complete the draw. Please try again."
       );
     } finally {
+      if (cyclingIntervalRef.current) {
+        clearInterval(cyclingIntervalRef.current);
+        cyclingIntervalRef.current = null;
+      }
       setDrawing(false);
       setCurrentSpinningTier(null);
     }
@@ -269,9 +357,14 @@ export default function AdminDraw() {
 
     try {
       await DrawService.resetGame(selectedGame.id);
+      if (cyclingIntervalRef.current) {
+        clearInterval(cyclingIntervalRef.current);
+        cyclingIntervalRef.current = null;
+      }
       setResults([]);
       setRevealedWinners([]);
       setLastWinnerAnnounced(null);
+      setDisplayedWheelNumbers(getInitialWheelNumbers(confirmedNumbers));
       currentRotation.current = 0;
       spinValue.setValue(0);
       notify("Draw reset", "Game is now open for a new draw.");
@@ -285,8 +378,11 @@ export default function AdminDraw() {
     outputRange: ["0deg", "360deg"],
   });
 
-  // Display up to 12 confirmed numbers evenly around the perimeter
-  const wheelNumbers = confirmedNumbers.slice(0, 12);
+  // Active wheel numbers: uses dynamically cycling numbers across full 1..200 pool, or initial sample
+  const activeWheelNumbers =
+    displayedWheelNumbers.length > 0
+      ? displayedWheelNumbers
+      : confirmedNumbers.slice(0, 12);
 
   return (
     <Screen
@@ -425,23 +521,35 @@ export default function AdminDraw() {
                       <View style={[localStyles.quadrant, { backgroundColor: "#16a34a", bottom: 0, right: 0 }]} />
                       <View style={[localStyles.quadrant, { backgroundColor: "#d97706", bottom: 0, left: 0 }]} />
 
-                      {/* Confirmed Numbers Placed Around the Circle */}
-                      {wheelNumbers.map((entry, index) => {
-                        const angle = (index / wheelNumbers.length) * 2 * Math.PI - Math.PI / 2;
+                      {/* Dynamic Cycling Numbers Placed Around the Circle */}
+                      {activeWheelNumbers.map((entry, index) => {
+                        const totalSlots = activeWheelNumbers.length || 12;
+                        const angle = (index / totalSlots) * 2 * Math.PI - Math.PI / 2;
                         const x = WHEEL_RADIUS - 16 + BADGE_OFFSET * Math.cos(angle);
                         const y = WHEEL_RADIUS - 16 + BADGE_OFFSET * Math.sin(angle);
+                        const isWinnerThisTier =
+                          lastWinnerAnnounced && Number(entry.number) === Number(lastWinnerAnnounced.number);
                         const isDrawn = drawnNumbers.includes(Number(entry.number));
 
                         return (
                           <View
-                            key={entry.id}
+                            key={`${entry.id}-${index}`}
                             style={[
                               localStyles.numberNode,
                               { left: x, top: y },
                               isDrawn && localStyles.numberNodeDrawn,
+                              isWinnerThisTier && localStyles.numberNodeWinnerHighlight,
                             ]}
                           >
-                            <Text className={`text-xs font-black ${isDrawn ? "text-amber-900" : "text-slate-900"}`}>
+                            <Text
+                              className={`text-xs font-black ${
+                                isWinnerThisTier
+                                  ? "text-amber-950 font-extrabold"
+                                  : isDrawn
+                                  ? "text-amber-900"
+                                  : "text-slate-900"
+                              }`}
+                            >
                               {entry.number}
                             </Text>
                           </View>
@@ -611,6 +719,16 @@ const localStyles = StyleSheet.create({
     backgroundColor: "#fde047",
     borderColor: "#b45309",
     transform: [{ scale: 1.15 }],
+  },
+  numberNodeWinnerHighlight: {
+    backgroundColor: "#f59e0b",
+    borderColor: "#ffffff",
+    borderWidth: 3,
+    transform: [{ scale: 1.25 }],
+    shadowColor: "#f59e0b",
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 6,
   },
   wheelCenter: {
     position: "absolute",

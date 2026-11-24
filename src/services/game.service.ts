@@ -34,6 +34,14 @@ export const GameService = {
   async deleteGame(id: number): Promise<void> {
     await api.delete(`/games/${id}`);
   },
+  async updateFull(id: number | string, payload: Partial<Game>): Promise<Game> {
+  const res = await api.patch(`/games/${id}`, payload);
+  return res.data;
+},
+
+async remove(id: number | string): Promise<void> {
+  await api.delete(`/games/${id}`);
+},
   async updateStatus(id: number | string, status: GameStatus): Promise<Game> {
     const numericId = Number(id);
 

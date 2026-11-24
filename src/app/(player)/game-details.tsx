@@ -5,7 +5,7 @@ import NumberGrid, { type NumberCell } from "@/features/numbers/NumberGrid";
 import FeatureNotice from "@/features/shared/FeatureNotice";
 import { NumberService } from "@/services/number.service";
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft, Clock3, Hash } from "lucide-react-native";
+import { ArrowLeft, Clock3, Hash, X } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 export default function GameDetailsScreen() {
@@ -233,17 +233,30 @@ export default function GameDetailsScreen() {
           numbers cannot be selected.
         </Text>
         <View className="mb-4 flex-row flex-wrap gap-2">
-          {[
-            { s: "AVAILABLE", c: "bg-emerald-100", t: "Available" },
-            { s: "RESERVED", c: "bg-amber-100", t: "Reserved" },
-            { s: "CONFIRMED", c: "bg-blue-100", t: "Confirmed" },
-          ].map((x) => (
-            <View key={x.s} className={`rounded-full px-3 py-2 ${x.c}`}>
-              <Text className="text-xs font-semibold text-slate-800">
-                {x.t}
-              </Text>
+          <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800">
+            <View className="w-3.5 h-3.5 rounded-full bg-emerald-500" />
+            <Text className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+              Available
+            </Text>
+          </View>
+
+          <View className="flex-row items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-800">
+            <View className="w-4 h-4 rounded-full bg-amber-100 items-center justify-center">
+              <X size={12} strokeWidth={4} color="#16a34a" />
             </View>
-          ))}
+            <Text className="text-xs font-bold text-amber-800 dark:text-amber-300">
+              Reserved (Green ✕)
+            </Text>
+          </View>
+
+          <View className="flex-row items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 border border-red-200 dark:bg-red-950/40 dark:border-red-800">
+            <View className="w-4 h-4 rounded-full bg-red-100 items-center justify-center">
+              <X size={12} strokeWidth={4} color="#dc2626" />
+            </View>
+            <Text className="text-xs font-bold text-red-800 dark:text-red-300">
+              Confirmed (Red ✕)
+            </Text>
+          </View>
         </View>
 
         <NumberGrid

@@ -6,10 +6,7 @@ import StatCard from "@/components/ui/StatCard";
 import FeatureNotice from "@/features/shared/FeatureNotice";
 import StatusPill from "@/components/ui/StatusPill";
 import DrawResultCard from "@/features/draws/DrawResultCard";
-import {
-  DrawService,
-  type OfficialDrawResult,
-} from "@/services/draw.service";
+import { DrawService, type OfficialDrawResult } from "@/services/draw.service";
 import { GameService } from "@/services/game.service";
 import { NumberService } from "@/services/number.service";
 import type { Game } from "@/types/game";
@@ -29,37 +26,98 @@ interface PrizeTier {
   color: string;
 }
 
-// Extracts dynamic tiers from the game's prizeDistribution
+const ORDINAL_LABELS: Record<string, { place: number; label: string; icon: string; color: string }> = {
+  first: { place: 1, label: "1st Place", icon: "🥇", color: "#eab308" },
+  "1": { place: 1, label: "1st Place", icon: "🥇", color: "#eab308" },
+  second: { place: 2, label: "2nd Place", icon: "🥈", color: "#94a3b8" },
+  "2": { place: 2, label: "2nd Place", icon: "🥈", color: "#94a3b8" },
+  third: { place: 3, label: "3rd Place", icon: "🥉", color: "#d97706" },
+  "3": { place: 3, label: "3rd Place", icon: "🥉", color: "#d97706" },
+  fourth: { place: 4, label: "4th Place", icon: "🎖️", color: "#a855f7" },
+  "4": { place: 4, label: "4th Place", icon: "🎖️", color: "#a855f7" },
+  fifth: { place: 5, label: "5th Place", icon: "🏅", color: "#3b82f6" },
+  "5": { place: 5, label: "5th Place", icon: "🏅", color: "#3b82f6" },
+  sixth: { place: 6, label: "6th Place", icon: "🏅", color: "#10b981" },
+  "6": { place: 6, label: "6th Place", icon: "🏅", color: "#10b981" },
+};
+
+function formatOrdinal(n: number): string {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th Place`;
+  switch (n % 10) {
+    case 1: return `${n}st Place`;
+    case 2: return `${n}nd Place`;
+    case 3: return `${n}rd Place`;
+    default: return `${n}th Place`;
+  }
+}
+
+// Dynamically extracts ALL real winner tiers from the game's prizeDistribution (supports 1, 2, 3, 4, or N winners)
 function getGamePrizeTiers(game: Game | null): PrizeTier[] {
   if (!game) return [];
+
   const rawDist = (game as any).prizeDistribution;
-  const dist = (typeof rawDist === "string"
-    ? JSON.parse(rawDist)
-    : rawDist) || { first: 60, second: 20, third: 10, fourth: 0, system: 10 };
+  if (!rawDist) return [];
 
-  const tiers: PrizeTier[] = [];
-  if (Number(dist.first) > 0) {
-    tiers.push({ place: 1, label: "1st Place", pct: Number(dist.first), icon: "🥇", color: "#eab308" });
-  }
-  if (Number(dist.second) > 0) {
-    tiers.push({ place: 2, label: "2nd Place", pct: Number(dist.second), icon: "🥈", color: "#94a3b8" });
-  }
-  if (Number(dist.third) > 0) {
-    tiers.push({ place: 3, label: "3rd Place", pct: Number(dist.third), icon: "🥉", color: "#d97706" });
-  }
-  if (Number(dist.fourth) > 0) {
-    tiers.push({ place: 4, label: "4th Place", pct: Number(dist.fourth), icon: "🎖️", color: "#a855f7" });
+  let parsed: any = rawDist;
+  if (typeof rawDist === "string") {
+    try {
+      parsed = JSON.parse(rawDist);
+    } catch {
+      return [];
+    }
   }
 
-  if (tiers.length === 0) {
-    return [
-      { place: 1, label: "1st Place", pct: 60, icon: "🥇", color: "#eab308" },
-      { place: 2, label: "2nd Place", pct: 20, icon: "🥈", color: "#94a3b8" },
-      { place: 3, label: "3rd Place", pct: 10, icon: "🥉", color: "#d97706" },
-    ];
+  // Case 1: Stored as an array (e.g. [{ place: 1, pct: 70 }, { place: 2, pct: 20 }])
+  if (Array.isArray(parsed)) {
+    return parsed
+      .map((item, idx) => {
+        const place = Number(item?.place ?? idx + 1);
+        const pct = Number(item?.pct ?? item?.percentage ?? item?.share ?? 0);
+        const preset = ORDINAL_LABELS[String(place)];
+        return {
+          place,
+          label: item?.label || item?.name || preset?.label || formatOrdinal(place),
+          pct,
+          icon: preset?.icon || "🏆",
+          color: preset?.color || "#3b82f6",
+        };
+      })
+      .filter((t) => t.pct > 0)
+      .sort((a, b) => a.place - b.place);
   }
-  return tiers;
+
+  // Case 2: Stored as an object (e.g. { first: 80, second: 0, third: 0, system: 20 } or { first: 40, second: 25, third: 15, fourth: 10, fifth: 5, system: 5 })
+  if (typeof parsed === "object") {
+    const excludedKeys = new Set(["system", "admin", "platform", "fee", "house", "commission"]);
+    const tiers: PrizeTier[] = [];
+    let fallbackIndex = 1;
+
+    for (const [key, value] of Object.entries(parsed)) {
+      const normalizedKey = key.trim().toLowerCase();
+      if (excludedKeys.has(normalizedKey)) continue;
+
+      const pct = Number(value);
+      if (!Number.isFinite(pct) || pct <= 0) continue;
+
+      const preset = ORDINAL_LABELS[normalizedKey];
+      const place = preset ? preset.place : fallbackIndex++;
+
+      tiers.push({
+        place,
+        label: preset ? preset.label : formatOrdinal(place),
+        pct,
+        icon: preset ? preset.icon : "🏆",
+        color: preset ? preset.color : "#3b82f6",
+      });
+    }
+
+    return tiers.sort((a, b) => a.place - b.place);
+  }
+
+  return [];
 }
+
 
 export default function History() {
   const [games, setGames] = useState<Game[]>([]);
@@ -80,11 +138,19 @@ export default function History() {
             (g) =>
               g.status === GameStatus.COMPLETED ||
               g.status === GameStatus.DRAWING ||
-              g.status === GameStatus.ACTIVE
+              g.status === GameStatus.ACTIVE,
           )
           .sort((a, b) => {
-            if (a.status === GameStatus.COMPLETED && b.status !== GameStatus.COMPLETED) return -1;
-            if (a.status !== GameStatus.COMPLETED && b.status === GameStatus.COMPLETED) return 1;
+            if (
+              a.status === GameStatus.COMPLETED &&
+              b.status !== GameStatus.COMPLETED
+            )
+              return -1;
+            if (
+              a.status !== GameStatus.COMPLETED &&
+              b.status === GameStatus.COMPLETED
+            )
+              return 1;
             return 0;
           });
 
@@ -113,7 +179,8 @@ export default function History() {
     ]).finally(() => setLoadingDetails(false));
   }, [selectedGame]);
 
-  const pct = totalCount > 0 ? Math.round((confirmedCount / totalCount) * 100) : 0;
+  const pct =
+    totalCount > 0 ? Math.round((confirmedCount / totalCount) * 100) : 0;
   const configuredTiers = getGamePrizeTiers(selectedGame);
   const hasOfficialResult = results.length > 0;
 
@@ -169,7 +236,9 @@ export default function History() {
                     {selectedGame.title} · #{selectedGame.id}
                   </Text>
                   <StatusPill
-                    status={hasOfficialResult ? "COMPLETED" : selectedGame.status}
+                    status={
+                      hasOfficialResult ? "COMPLETED" : selectedGame.status
+                    }
                   />
                 </View>
 

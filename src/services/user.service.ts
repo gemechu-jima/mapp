@@ -13,6 +13,10 @@ export const UserService = {
     const response = await api.patch('/users/me', data);
     return response.data; // returns { token, user: { id, name, phone, role }, success: true }
   },
+  async profile(userId?: number | string) {
+    const response = await api.get('/users/me');
+    return response.data; // returns { token, user: { id, name, phone, role }, success: true }
+  },
   async grantGamePermission(data: GrantGamePermissionDto): Promise<GamePermission> {
     return (await api.post<GamePermission>('/users/game-permissions', data)).data;
   },
@@ -37,4 +41,5 @@ async toggleActivation(userId: number | string, isActivated: boolean) {
     });
     return response.data;
   },
+  
 };

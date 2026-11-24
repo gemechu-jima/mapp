@@ -42,7 +42,7 @@ const NAV_ITEMS: NavItem[] = [
     activeIcon: "person",
     routes: {
       player: "/(player)/profile",
-      admin: "/admin/dashboard",
+      admin: "/admin/profile",
     },
   },
   {
@@ -62,7 +62,7 @@ interface BottomNavigationProps {
 }
 
 export default function BottomNavigation({ role }: BottomNavigationProps) {
-  const { user } = useAuth()
+  const { user } = useAuth();
   const pathname = usePathname() ?? "";
   const normalizedRole: UserRole =
     user?.role?.toLowerCase() === "admin" ? "admin" : "player";
@@ -94,8 +94,9 @@ export default function BottomNavigation({ role }: BottomNavigationProps) {
               color={isActive ? "#16a34a" : "#6b7280"}
             />
             <Text
-              className={`mt-1 text-xs ${isActive ? "font-bold text-green-600" : "text-gray-500"
-                }`}
+              className={`mt-1 text-xs ${
+                isActive ? "font-bold text-green-600" : "text-gray-500"
+              }`}
             >
               {item.label}
             </Text>
