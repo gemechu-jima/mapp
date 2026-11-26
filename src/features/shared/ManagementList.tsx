@@ -1,13 +1,13 @@
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { Pressable, View } from "react-native";
-import { Search, Plus, ChevronRight } from "lucide-react-native";
+import { Plus, ChevronRight } from "lucide-react-native";
 import Screen from "@/components/ui/Screen";
 import AppButton from "@/components/ui/AppButton";
 import StatusPill from "@/components/ui/StatusPill";
 import StatCard from "@/components/ui/StatCard";
 import SectionTitle from "@/components/ui/SectionTitle";
+import Search, { useSearch } from "@/features/shared/Search";
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
-import { TranslatedTextInput as TextInput } from "@/components/common/TranslatedText";
 export type RecordItem = {
   id: string | number;
   title: string;
@@ -39,11 +39,9 @@ export default function ManagementList({
   emptyText = "No records to display yet.",
   children,
 }: Props) {
-  const [query, setQuery] = useState("");
-  const filtered = records.filter((r) =>
-    `${r.title} ${r.subtitle} ${r.status}`
-      .toLowerCase()
-      .includes(query.toLowerCase()),
+  const { query, setQuery, filteredItems: filtered } = useSearch(
+    records,
+    (r) => [r.title, r.subtitle, r.status, r.detail],
   );
   return (
     <Screen title={title} subtitle={subtitle}>
@@ -53,16 +51,13 @@ export default function ManagementList({
         ))}
       </View>
       {children}
-      <View className="mb-4 flex-row items-center rounded-xl border border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900">
-        <Search size={18} color="#94a3b8" />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder={searchPlaceholder}
-          placeholderTextColor="#94a3b8"
-          className="flex-1 px-3 py-3 text-slate-900 dark:text-white"
-        />
-      </View>
+      <Search
+        value={query}
+        onChangeText={setQuery}
+        placeholder={searchPlaceholder}
+        resultCount={filtered.length}
+        className="mb-4"
+      />
       {actionLabel ? (
         <AppButton
           title={actionLabel}

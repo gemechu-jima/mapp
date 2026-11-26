@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/vector-icons": "~14.0.4",
-    "@imagekit/react": "^5.0.3",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native/js-polyfills": "^0.88.1",
     "axios": "^1.20.0",
@@ -26,7 +25,6 @@
     "expo-system-ui": "~4.0.9",
     "expo-web-browser": "~14.0.2",
     "i18next": "^26.4.4",
-    "imagekit-javascript": "^4.0.1",
     "lucide-react-native": "^1.72.0",
     "nativewind": "^4.2.7",
     "query-string": "^7.1.3",

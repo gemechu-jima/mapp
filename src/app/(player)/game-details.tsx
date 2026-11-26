@@ -1,11 +1,15 @@
 import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import AppButton from "@/components/ui/AppButton";
 import { useAuth } from "@/context/AuthContext";
-import NumberGrid, { type NumberCell } from "@/features/numbers/NumberGrid";
+import NumberBoard, {
+  getNumberStats,
+  normalizeNumberCells,
+} from "@/features/numbers/NumberBoard";
+import { type NumberCell } from "@/features/numbers/NumberGrid";
 import FeatureNotice from "@/features/shared/FeatureNotice";
 import { NumberService } from "@/services/number.service";
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft, Clock3, Hash, X } from "lucide-react-native";
+import { ArrowLeft, Clock3, Hash } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 export default function GameDetailsScreen() {
@@ -30,27 +34,8 @@ export default function GameDetailsScreen() {
     setLoading(true);
     NumberService.getByGame(gameId)
       .then((res: any) => {
-        const list = Array.isArray(res)
-          ? res
-          : Array.isArray(res?.data)
-            ? res.data
-            : [];
         if (active) {
-          setNumbers(
-            list.map((n: any) => {
-              const isExpired =
-                n.status === "RESERVED" &&
-                n.reservedUntil &&
-                new Date(n.reservedUntil).getTime() < Date.now();
-
-              return {
-                id: n.id,
-                number: n.number,
-                status: isExpired ? "AVAILABLE" : n.status,
-                reservedBy: n.reservedBy ?? null,
-              };
-            }),
-          );
+          setNumbers(normalizeNumberCells(res));
         }
       })
       .catch(() => { })
@@ -61,10 +46,7 @@ export default function GameDetailsScreen() {
       active = false;
     };
   }, [gameId]);
-  const available = useMemo(
-    () => numbers.filter((n) => n.status === "AVAILABLE").length,
-    [numbers],
-  );
+  const { available } = useMemo(() => getNumberStats(numbers), [numbers]);
   const proceed = async () => {
     if (selected.length === 0) {
       Alert.alert("Select numbers", "Please select at least one number.");
@@ -151,20 +133,9 @@ export default function GameDetailsScreen() {
       // Refresh from the backend to get the latest number statuses.
       try {
         const res = await NumberService.getByGame(gameId);
-        const list = Array.isArray(res)
-          ? res
-          : Array.isArray(res?.data)
-            ? res.data
-            : [];
-
-        if (list.length > 0) {
-          setNumbers(
-            list.map((n: any) => ({
-              id: n.id,
-              number: n.number,
-              status: n.status,
-            })),
-          );
+        const refreshed = normalizeNumberCells(res);
+        if (refreshed.length > 0) {
+          setNumbers(refreshed);
         }
       } catch (refreshError) {
         console.error("Could not refresh numbers:", refreshError);
@@ -232,34 +203,7 @@ export default function GameDetailsScreen() {
           You can select multiple available numbers. Reserved and confirmed
           numbers cannot be selected.
         </Text>
-        <View className="mb-4 flex-row flex-wrap gap-2">
-          <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800">
-            <View className="w-3.5 h-3.5 rounded-full bg-emerald-500" />
-            <Text className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
-              Available
-            </Text>
-          </View>
-
-          <View className="flex-row items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-800">
-            <View className="w-4 h-4 rounded-full bg-amber-100 items-center justify-center">
-              <X size={12} strokeWidth={4} color="#16a34a" />
-            </View>
-            <Text className="text-xs font-bold text-amber-800 dark:text-amber-300">
-              Reserved (Green ✕)
-            </Text>
-          </View>
-
-          <View className="flex-row items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 border border-red-200 dark:bg-red-950/40 dark:border-red-800">
-            <View className="w-4 h-4 rounded-full bg-red-100 items-center justify-center">
-              <X size={12} strokeWidth={4} color="#dc2626" />
-            </View>
-            <Text className="text-xs font-bold text-red-800 dark:text-red-300">
-              Confirmed (Red ✕)
-            </Text>
-          </View>
-        </View>
-
-        <NumberGrid
+        <NumberBoard
           numbers={numbers}
           selected={selected}
           currentUserId={user?.id}

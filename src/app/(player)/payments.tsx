@@ -8,10 +8,10 @@ import Screen from "@/components/ui/Screen";
 import StatusPill from "@/components/ui/StatusPill";
 import { useAuth } from "@/context/AuthContext";
 import FeatureNotice from "@/features/shared/FeatureNotice";
-import { uploadApi } from "@/services/api";
+import { api } from "@/services/api";
 import { PaymentService } from "@/services/payment.service";
 import { ReservationService } from "@/services/reservation.service";
-import { uploadToImageKit } from "@/shared/imagekitService";
+import { uploadImage } from "@/shared/uploadImage";
 import {
   detectPaymentProvider,
   type DetectedPaymentMethod,
@@ -302,47 +302,29 @@ export default function PlayerPayments() {
 
       const proofFileName = `payment-proof-${Date.now()}.jpg`;
 
-      // 1. Upload payment proof to ImageKit
-      const uploadedImage = await uploadToImageKit(
+      // 1. Upload payment proof directly to Cloudinary (never save file on backend)
+      const uploadedImage = await uploadImage(
         {
           uri: proof,
           name: proofFileName,
           type: "image/jpeg",
         },
         {
-          folder: "/payment-proofs",
+          folder: "payment-proofs",
           tags: ["payment-proof", selectedPayment.type],
         },
       );
 
-      // 2. Prepare proof file for Web and Native
-      let proofFile: any = {
-        uri: proof,
-        name: proofFileName,
-        type: "image/jpeg",
-      };
-
-      if (Platform.OS === "web") {
-        const res = await fetch(proof);
-        const blob = await res.blob();
-        proofFile = new File([blob], proofFileName, {
-          type: blob.type || "image/jpeg",
-        });
-      }
-
-      // 3. Submit proof for each selected active reservation
+      // 2. Submit only the Cloudinary URL and metadata to the backend payment table
       for (const item of selectedReservations) {
         const resId = String(item.id);
-        const formData = new FormData();
-        formData.append("provider", selectedPayment.type);
-        formData.append("reservationId", resId);
-        formData.append("numberId", resId);
-        formData.append("transactionReference", reference.trim());
-        formData.append("proofUrl", uploadedImage.url);
-        formData.append("proof", proofFile);
-
-        await uploadApi.post(`/numbers/${resId}/payment-proofs`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+        await api.post(`/numbers/${resId}/payment-proofs`, {
+          provider: selectedPayment.type,
+          reservationId: resId,
+          numberId: resId,
+          transactionReference: reference.trim(),
+          proofUrl: uploadedImage.url,
+          screenshotUrl: uploadedImage.url,
         });
       }
 
@@ -369,6 +351,7 @@ export default function PlayerPayments() {
       Alert.alert(
         "Submission failed",
         error?.response?.data?.message ??
+          error?.message ??
           "Could not submit your payment proof. Please try again.",
       );
     } finally {

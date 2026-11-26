@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -33,12 +33,18 @@ export default function AdminPlayers() {
   const [editLastName, setEditLastName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [saving, setSaving] = useState(false);
-const { query, setQuery, filteredItems } = useSearch(users, (u) => [
-  u.firstName,
-  u.lastName,
-  u.phoneNumber,
-  u.activationCode,
-]);
+
+  const players = useMemo(
+    () => users.filter((u) => u.role !== "ADMIN"),
+    [users],
+  );
+
+  const { query, setQuery, filteredItems } = useSearch(players, (u) => [
+    u.firstName,
+    u.lastName,
+    u.phoneNumber,
+    u.activationCode,
+  ]);
 
 
   const notify = (msg: string) =>
@@ -69,7 +75,6 @@ const { query, setQuery, filteredItems } = useSearch(users, (u) => [
     fetchUsers();
   }, [fetchUsers]);
 
-  const players = users.filter((u) => u.role !== "ADMIN");
   const activeCount = players.filter((u) => u.isActivated).length;
   const pendingCount = players.filter((u) => !u.isActivated).length;
 
@@ -262,8 +267,14 @@ const { query, setQuery, filteredItems } = useSearch(users, (u) => [
                   No registered players found.
                 </Text>
               </View>
+            ) : filteredItems.length === 0 ? (
+              <View className="p-6">
+                <Text className="text-sm text-slate-500 dark:text-slate-400">
+                  No players matched "{query}".
+                </Text>
+              </View>
             ) : (
-              players.map((player) => {
+              filteredItems.map((player) => {
                 const fullName =
                   `${player.firstName || ""} ${player.lastName || ""}`.trim() ||
                   "Player";

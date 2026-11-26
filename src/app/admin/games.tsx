@@ -224,6 +224,7 @@ const { query, setQuery, filteredItems } = useSearch(games, (g) => [
         value={query}
         onChangeText={setQuery}
         placeholder="Search games by title, ID, or status…"
+        resultCount={filteredItems.length}
       />
       {/* Header Action Button */}
       <View className="mb-4 w-32 ">
@@ -251,9 +252,14 @@ const { query, setQuery, filteredItems } = useSearch(games, (g) => [
           title="No games yet"
           body="Tap Create game above to launch your first game."
         />
+      ) : filteredItems.length === 0 ? (
+        <FeatureNotice
+          title="No matching games"
+          body={`No games matched "${query}".`}
+        />
       ) : (
         <View className="gap-3">
-          {games.map((g) => {
+          {filteredItems.map((g) => {
             const isMenuOpen = menuGameId === g.id;
             return (
               <View

@@ -2,14 +2,17 @@ import { TranslatedText as Text } from "@/components/common/TranslatedText";
 import AppButton from "@/components/ui/AppButton";
 import Screen from "@/components/ui/Screen";
 import SectionTitle from "@/components/ui/SectionTitle";
-import NumberGrid, { type NumberCell } from "@/features/numbers/NumberGrid";
+import NumberBoard, {
+  getNumberStats,
+  normalizeNumberCells,
+} from "@/features/numbers/NumberBoard";
+import { type NumberCell } from "@/features/numbers/NumberGrid";
 import FeatureNotice from "@/features/shared/FeatureNotice";
 import { GameService } from "@/services/game.service";
 import { NumberService } from "@/services/number.service";
 import type { Game } from "@/types/game";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import { X } from "lucide-react-native";
 
 export default function AdminNumbers() {
   const [games, setGames] = useState<Game[]>([]);
@@ -26,7 +29,7 @@ export default function AdminNumbers() {
         setGames(list);
         if (list.length > 0) setSelectedGame(list[0]);
       })
-      .catch(() => { })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -37,24 +40,7 @@ export default function AdminNumbers() {
     setLoadingNumbers(true);
     NumberService.getForGame(selectedGame.id)
       .then((list) => {
-        if (list.length > 0) {
-          setNumbers(
-            list.map((n) => ({
-              id: n.id,
-              number: n.number,
-              status: n.status,
-            })),
-          );
-        } else {
-          // Show placeholder grid if game has no numbers yet
-          setNumbers(
-            Array.from({ length: selectedGame.totalNumbers }, (_, i) => ({
-              id: i + 1,
-              number: i + 1,
-              status: "AVAILABLE" as const,
-            })),
-          );
-        }
+        setNumbers(normalizeNumberCells(list, selectedGame.totalNumbers));
       })
       .catch(() => {
         setNumbers([]);
@@ -62,18 +48,17 @@ export default function AdminNumbers() {
       .finally(() => setLoadingNumbers(false));
   }, [selectedGame]);
 
-  const available = numbers.filter((n) => n.status === "AVAILABLE").length;
-  const reserved = numbers.filter((n) => n.status === "RESERVED").length;
-  const confirmed = numbers.filter((n) => n.status === "CONFIRMED").length;
+  const { available, reserved, confirmed } = getNumberStats(numbers);
 
   return (
     <Screen
       title="Number management"
       subtitle="Inspect number states and review number availability per game."
     >
-      {/* Game selector */}
       {loading ? (
-        <Text className="mb-4 text-slate-500 dark:text-slate-400">Loading games…</Text>
+        <Text className="mb-4 text-slate-500 dark:text-slate-400">
+          Loading games…
+        </Text>
       ) : games.length === 0 ? (
         <FeatureNotice
           title="No games found"
@@ -97,58 +82,38 @@ export default function AdminNumbers() {
             body="Confirmed numbers are locked. Reservation expiry and status transitions are enforced by the backend."
           />
 
-          {/* Legend */}
-          <View className="mb-4 flex-row flex-wrap gap-2">
-            <View className="flex-row items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800">
-              <View className="w-3.5 h-3.5 rounded-full bg-emerald-500" />
-              <Text className="text-xs font-bold text-emerald-800 dark:text-emerald-300">Available</Text>
-            </View>
-
-            <View className="flex-row items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-800">
-              <View className="w-4 h-4 rounded-full bg-amber-100 items-center justify-center">
-                <X size={12} strokeWidth={4} color="#16a34a" />
+          <NumberBoard
+            numbers={numbers}
+            selected={selected}
+            loading={loadingNumbers}
+            onToggle={(id) =>
+              setSelected((s) =>
+                s.includes(id) ? s.filter((n) => n !== id) : [...s, id],
+              )
+            }
+            header={
+              selectedGame ? (
+                <SectionTitle
+                  title={selectedGame.title}
+                  caption={`${available} available · ${reserved} reserved · ${confirmed} confirmed`}
+                />
+              ) : null
+            }
+            footer={
+              <View className="mt-5 gap-2">
+                <AppButton
+                  title="Clear selection"
+                  variant="secondary"
+                  disabled={!selected.length}
+                  onPress={() => setSelected([])}
+                />
+                <Text className="text-xs leading-5 text-slate-500 dark:text-slate-400">
+                  Selected: {selected.length} number(s). Confirmed numbers are
+                  read-only.
+                </Text>
               </View>
-              <Text className="text-xs font-bold text-amber-800 dark:text-amber-300">Reserved (Green ✕)</Text>
-            </View>
-
-            <View className="flex-row items-center gap-1.5 rounded-full bg-red-50 px-3 py-1.5 border border-red-200 dark:bg-red-950/40 dark:border-red-800">
-              <View className="w-4 h-4 rounded-full bg-red-100 items-center justify-center">
-                <X size={12} strokeWidth={4} color="#dc2626" />
-              </View>
-              <Text className="text-xs font-bold text-red-800 dark:text-red-300">Confirmed (Red ✕)</Text>
-            </View>
-          </View>
-
-          {selectedGame ? (
-            <SectionTitle
-              title={selectedGame.title}
-              caption={`${available} available · ${reserved} reserved · ${confirmed} confirmed`}
-            />
-          ) : null}
-
-          {loadingNumbers ? (
-            <Text className="text-slate-500 dark:text-slate-400">Loading numbers…</Text>
-          ) : (
-            <NumberGrid
-              numbers={numbers}
-              selected={selected}
-              onToggle={(id) =>
-                setSelected((s) => (s.includes(id) ? s.filter((n) => n !== id) : [...s, id]))
-              }
-            />
-          )}
-
-          <View className="mt-5 gap-2">
-            <AppButton
-              title="Clear selection"
-              variant="secondary"
-              disabled={!selected.length}
-              onPress={() => setSelected([])}
-            />
-            <Text className="text-xs leading-5 text-slate-500 dark:text-slate-400">
-              Selected: {selected.length} number(s). Confirmed numbers are read-only.
-            </Text>
-          </View>
+            }
+          />
         </>
       )}
     </Screen>

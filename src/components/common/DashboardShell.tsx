@@ -20,7 +20,7 @@ export default function DashboardShell({ role, children }: Props) {
   const [unreadCount, setUnreadCount] = useState(0);
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const title = role === "admin" ? "Bingo Admin" : "Bingo";
+  const title = role === "admin" ? "Game Admin" : "Game";
 
   useEffect(() => {
     if (role === "admin") {
