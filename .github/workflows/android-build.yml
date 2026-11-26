@@ -40,6 +40,9 @@ jobs:
           AUTH_ENDPOINT: ${{ secrets.AUTH_ENDPOINT }}
           PUBLIC_KEY: ${{ secrets.PUBLIC_KEY }}
           URL_ENDPOINT: ${{ secrets.URL_ENDPOINT }}
+          EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME: ${{ secrets.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME }}
+          EXPO_PUBLIC_CLOUDINARY_API_KEY: ${{ secrets.EXPO_PUBLIC_CLOUDINARY_API_KEY }}
+          EXPO_PUBLIC_CLOUDINARY_API_SECRET: ${{ secrets.EXPO_PUBLIC_CLOUDINARY_API_SECRET }}
         run: eas build --platform android --profile preview-modern --local --non-interactive --output=./app-release.apk
 
       - name: Upload APK Artifact
